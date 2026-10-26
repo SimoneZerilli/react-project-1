@@ -1,4 +1,4 @@
-import type { EvaluatedHand, HandType, PlayingCard, Rank } from './types';
+import type { EvaluatedHand, HandLevelInfo, HandType, PlayingCard, Rank } from './types';
 
 export interface HandBaseStats {
   displayName: string;
@@ -54,14 +54,25 @@ export const BASE_HAND_STATS: Record<HandType, HandBaseStats> = {
   },
 };
 
-/**
- * Verifica se un array di 5 carte ordinate per rango forma una scala numerica.
- * Gestisce sia scale regolari (es. 9-10-J-Q-K) che la scala minima con Asso (A-2-3-4-5).
- */
+function getHandStats(
+  type: HandType,
+  handLevels?: Record<HandType, HandLevelInfo>
+): { baseChips: number; baseMult: number } {
+  if (handLevels && handLevels[type]) {
+    return {
+      baseChips: handLevels[type].baseChips,
+      baseMult: handLevels[type].baseMult,
+    };
+  }
+  return {
+    baseChips: BASE_HAND_STATS[type].baseChips,
+    baseMult: BASE_HAND_STATS[type].baseMult,
+  };
+}
+
 function isStraightSequence(sortedUniqueRanks: Rank[]): boolean {
   if (sortedUniqueRanks.length !== 5) return false;
 
-  // Scala regolare: ogni elemento successivo differisce di 1
   const isRegular =
     sortedUniqueRanks[1] === sortedUniqueRanks[0] + 1 &&
     sortedUniqueRanks[2] === sortedUniqueRanks[1] + 1 &&
@@ -70,7 +81,6 @@ function isStraightSequence(sortedUniqueRanks: Rank[]): boolean {
 
   if (isRegular) return true;
 
-  // Scala con Asso basso: 2, 3, 4, 5, 14 (Asso)
   const isAceLow =
     sortedUniqueRanks[0] === 2 &&
     sortedUniqueRanks[1] === 3 &&
@@ -82,10 +92,13 @@ function isStraightSequence(sortedUniqueRanks: Rank[]): boolean {
 }
 
 /**
- * Valuta un insieme di carte (da 1 a 5) e restituisce la mano di poker più forte,
- * insieme alle carte effettive che concorrono al calcolo dei punti.
+ * Valuta un insieme di carte (da 1 a 5) e restituisce la combinazione più forte,
+ * tenendo conto dei livelli di potenziamento correnti delle mani.
  */
-export function evaluateHand(cards: readonly PlayingCard[]): EvaluatedHand {
+export function evaluateHand(
+  cards: readonly PlayingCard[],
+  handLevels?: Record<HandType, HandLevelInfo>
+): EvaluatedHand {
   if (cards.length === 0) {
     return {
       type: 'high_card',
@@ -96,7 +109,6 @@ export function evaluateHand(cards: readonly PlayingCard[]): EvaluatedHand {
     };
   }
 
-  // Raggruppa le carte per rango
   const rankGroups = new Map<Rank, PlayingCard[]>();
   for (const card of cards) {
     const group = rankGroups.get(card.rank) || [];
@@ -104,7 +116,6 @@ export function evaluateHand(cards: readonly PlayingCard[]): EvaluatedHand {
     rankGroups.set(card.rank, group);
   }
 
-  // Ordina i gruppi per dimensione decrescente, e a parità per valore di rango decrescente
   const sortedGroups = Array.from(rankGroups.entries()).sort((a, b) => {
     if (b[1].length !== a[1].length) {
       return b[1].length - a[1].length;
@@ -112,7 +123,6 @@ export function evaluateHand(cards: readonly PlayingCard[]): EvaluatedHand {
     return b[0] - a[0];
   });
 
-  // Ordina le carte selezionate per rango crescente
   const sortedCards = [...cards].sort((a, b) => a.rank - b.rank);
   const uniqueRanks = Array.from(new Set(sortedCards.map((c) => c.rank)));
 
@@ -122,100 +132,108 @@ export function evaluateHand(cards: readonly PlayingCard[]): EvaluatedHand {
 
   // 1. Straight Flush
   if (isStraight && isFlush) {
+    const stats = getHandStats('straight_flush', handLevels);
     return {
       type: 'straight_flush',
       displayName: BASE_HAND_STATS.straight_flush.displayName,
       scoringCards: [...cards],
-      baseChips: BASE_HAND_STATS.straight_flush.baseChips,
-      baseMult: BASE_HAND_STATS.straight_flush.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 2. Four of a Kind (Poker)
+  // 2. Four of a Kind
   if (sortedGroups[0][1].length === 4) {
+    const stats = getHandStats('four_of_a_kind', handLevels);
     return {
       type: 'four_of_a_kind',
       displayName: BASE_HAND_STATS.four_of_a_kind.displayName,
       scoringCards: sortedGroups[0][1],
-      baseChips: BASE_HAND_STATS.four_of_a_kind.baseChips,
-      baseMult: BASE_HAND_STATS.four_of_a_kind.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 3. Full House (Tris + Coppia)
+  // 3. Full House
   if (sortedGroups[0][1].length === 3 && sortedGroups[1]?.[1].length >= 2) {
+    const stats = getHandStats('full_house', handLevels);
     return {
       type: 'full_house',
       displayName: BASE_HAND_STATS.full_house.displayName,
       scoringCards: [...sortedGroups[0][1], ...sortedGroups[1][1].slice(0, 2)],
-      baseChips: BASE_HAND_STATS.full_house.baseChips,
-      baseMult: BASE_HAND_STATS.full_house.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 4. Flush (Colore)
+  // 4. Flush
   if (isFlush) {
+    const stats = getHandStats('flush', handLevels);
     return {
       type: 'flush',
       displayName: BASE_HAND_STATS.flush.displayName,
       scoringCards: [...cards],
-      baseChips: BASE_HAND_STATS.flush.baseChips,
-      baseMult: BASE_HAND_STATS.flush.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 5. Straight (Scala)
+  // 5. Straight
   if (isStraight) {
+    const stats = getHandStats('straight', handLevels);
     return {
       type: 'straight',
       displayName: BASE_HAND_STATS.straight.displayName,
       scoringCards: [...cards],
-      baseChips: BASE_HAND_STATS.straight.baseChips,
-      baseMult: BASE_HAND_STATS.straight.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 6. Three of a Kind (Tris)
+  // 6. Three of a Kind
   if (sortedGroups[0][1].length === 3) {
+    const stats = getHandStats('three_of_a_kind', handLevels);
     return {
       type: 'three_of_a_kind',
       displayName: BASE_HAND_STATS.three_of_a_kind.displayName,
       scoringCards: sortedGroups[0][1],
-      baseChips: BASE_HAND_STATS.three_of_a_kind.baseChips,
-      baseMult: BASE_HAND_STATS.three_of_a_kind.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 7. Two Pair (Doppia Coppia)
+  // 7. Two Pair
   if (sortedGroups[0][1].length === 2 && sortedGroups[1]?.[1].length === 2) {
+    const stats = getHandStats('two_pair', handLevels);
     return {
       type: 'two_pair',
       displayName: BASE_HAND_STATS.two_pair.displayName,
       scoringCards: [...sortedGroups[0][1], ...sortedGroups[1][1]],
-      baseChips: BASE_HAND_STATS.two_pair.baseChips,
-      baseMult: BASE_HAND_STATS.two_pair.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 8. Pair (Coppia)
+  // 8. Pair
   if (sortedGroups[0][1].length === 2) {
+    const stats = getHandStats('pair', handLevels);
     return {
       type: 'pair',
       displayName: BASE_HAND_STATS.pair.displayName,
       scoringCards: sortedGroups[0][1],
-      baseChips: BASE_HAND_STATS.pair.baseChips,
-      baseMult: BASE_HAND_STATS.pair.baseMult,
+      baseChips: stats.baseChips,
+      baseMult: stats.baseMult,
     };
   }
 
-  // 9. High Card (Carta Alta) - conta la carta con il rango più alto
+  // 9. High Card
+  const stats = getHandStats('high_card', handLevels);
   const highestCard = sortedCards[sortedCards.length - 1];
   return {
     type: 'high_card',
     displayName: BASE_HAND_STATS.high_card.displayName,
     scoringCards: [highestCard],
-    baseChips: BASE_HAND_STATS.high_card.baseChips,
-    baseMult: BASE_HAND_STATS.high_card.baseMult,
+    baseChips: stats.baseChips,
+    baseMult: stats.baseMult,
   };
 }
-

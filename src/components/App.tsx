@@ -1,21 +1,36 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Blind, Joker, PlayingCard } from '../types/game';
+import type { Blind, HandLevelInfo, HandType, Joker, PlayingCard, ShopItem } from '../types/game';
 import { createStandardDeck, shuffleDeck, drawCards, formatRank, getSuitLabel } from '../game/deck';
 import { evaluateHand } from '../game/handEvaluator';
 import { calculateScore, type ScoreBreakdown } from '../game/scoring';
 import { createAnteBlinds } from '../game/blinds';
 import { JOKERS_ROSTER } from '../game/jokers';
+import {
+  calculateInterest,
+  createInitialHandLevels,
+  upgradeHandLevel,
+  generateShopItems,
+} from '../game/shop';
 import { useRovingTabindex } from '../hooks/useKeyboardNav';
 import { CardView } from './CardView';
 import { HandPreview } from './HandPreview';
 import { PlayControls } from './PlayControls';
 import { BlindSelect } from './BlindSelect';
 import { JokerSlots } from './JokerSlots';
+import { ShopView } from './ShopView';
 import { HelpDialog } from './HelpDialog';
 import '../styles/pixel-theme.css';
 import './App.css';
 
 const INITIAL_DISCARDS_COUNT = 4;
+
+interface RoundEarnedSummary {
+  blindReward: number;
+  handsBonus: number;
+  interestBonus: number;
+  usuryBonus: number;
+  total: number;
+}
 
 export const App: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -23,12 +38,22 @@ export const App: React.FC = () => {
 
   // Progressione Run
   const [ante, setAnte] = useState<number>(1);
-  const [phase, setPhase] = useState<'select_blind' | 'in_blind' | 'round_won' | 'game_over' | 'victory'>('select_blind');
+  const [phase, setPhase] = useState<
+    'select_blind' | 'in_blind' | 'round_won' | 'shop' | 'game_over' | 'victory'
+  >('select_blind');
   const [activeBlindType, setActiveBlindType] = useState<'small' | 'big' | 'boss'>('small');
   const [money, setMoney] = useState<number>(4);
 
-  // Equipaggiamento Jolly (inizia con il Giullare di Corte per familiarizzare subito)
+  // Livelli permanenti delle combinazioni di poker
+  const [handLevels, setHandLevels] = useState<Record<HandType, HandLevelInfo>>(createInitialHandLevels);
+
+  // Equipaggiamento Jolly
   const [equippedJokers, setEquippedJokers] = useState<Joker[]>([JOKERS_ROSTER.court_jester]);
+
+  // Negozio tra i blind
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
+  const [rerollCost, setRerollCost] = useState<number>(5);
+  const [roundEarnings, setRoundEarnings] = useState<RoundEarnedSummary | null>(null);
 
   // Modificatori accumulati dai Tag
   const [pendingBonusDiscards, setPendingBonusDiscards] = useState<number>(0);
@@ -60,10 +85,10 @@ export const App: React.FC = () => {
     return hand.filter((c) => selectedCardIds.includes(c.id));
   }, [hand, selectedCardIds]);
 
-  // Valutazione della mano base
+  // Valutazione mano con i livelli correnti
   const evaluatedHand = useMemo(() => {
-    return evaluateHand(selectedCards);
-  }, [selectedCards]);
+    return evaluateHand(selectedCards, handLevels);
+  }, [selectedCards, handLevels]);
 
   // Regola Boss Debuff
   const isCardDebuffed = useCallback((card: PlayingCard): boolean => {
@@ -76,7 +101,7 @@ export const App: React.FC = () => {
 
   const discardsUsedThisRound = Math.max(0, startingDiscards - discardsRemaining);
 
-  // Calcolo stima punteggio in tempo reale (inclusi i bonus dei Jolly)
+  // Stima punteggio dinamica
   const previewBreakdown = useMemo(() => {
     if (selectedCards.length === 0) return null;
     return calculateScore(evaluatedHand, isCardDebuffed, equippedJokers, {
@@ -104,7 +129,7 @@ export const App: React.FC = () => {
     setAnnouncement(`Jolly venduto: ${targetJoker.name}. Ricevuti +$${targetJoker.sellValue}.`);
   }, [equippedJokers]);
 
-  // Avvio di un Blind
+  // Avvio sessione di gioco per un Blind
   const startBlindSession = useCallback((blindToPlay: Blind) => {
     setCurrentBlind(blindToPlay);
 
@@ -143,7 +168,7 @@ export const App: React.FC = () => {
     setAnnouncement(`Iniziato ${blindToPlay.title}. Obiettivo: ${blindToPlay.scoreTarget} punti.`);
   }, [pendingBonusDiscards, pendingBonusHands]);
 
-  // Salto (Skip) del Blind con Tag
+  // Salto (Skip) Blind con Tag
   const handleSkipBlind = useCallback((blindToSkip: Blind) => {
     if (!blindToSkip.canSkip || !blindToSkip.skipTag) return;
 
@@ -240,17 +265,16 @@ export const App: React.FC = () => {
     const newScore = score + breakdown.finalScore;
     const newHands = handsRemaining - 1;
 
-    // Aggiungi eventuale oro generato istantaneamente dai Jolly (es. L'Alchimista)
+    let currentGold = money;
     if (breakdown.bonusMoney > 0) {
-      setMoney((prev) => prev + breakdown.bonusMoney);
+      currentGold += breakdown.bonusMoney;
+      setMoney(currentGold);
     }
 
-    // Rimuovi carte giocate
     const playedCards = hand.filter((c) => selectedCardIds.includes(c.id));
     const remainingHand = hand.filter((c) => !selectedCardIds.includes(c.id));
     setDiscardPile((prev) => [...prev, ...playedCards]);
 
-    // Ricarica mano
     const maxHandSize = currentBlind.type === 'boss' && currentBlind.bossRule?.id === 'iron_cage' ? 7 : 8;
     const cardsNeeded = maxHandSize - remainingHand.length;
     const { drawn, remaining: newDeck } = drawCards(deck, cardsNeeded);
@@ -265,25 +289,37 @@ export const App: React.FC = () => {
     setLastPlayedBreakdown(breakdown);
 
     if (newScore >= currentBlind.scoreTarget) {
-      // Trigger Jolly di fine blind (es. L'Usuraio di Borgo)
+      // Calcolo dell'economia di vittoria (Taglia + Mani avanzate + Interesse taverna + Usuraio)
       let bonusUsury = 0;
       for (const j of equippedJokers) {
         if (j.onBlindWon) {
           const res = j.onBlindWon({
             handsRemaining: newHands,
             discardsRemaining,
-            money,
+            money: currentGold,
             ante,
           });
           if (res?.addMoney) bonusUsury += res.addMoney;
         }
       }
 
-      const reward = currentBlind.rewardMoney + newHands + bonusUsury;
-      setMoney((prev) => prev + reward);
+      const blindReward = currentBlind.rewardMoney;
+      const handsBonus = newHands;
+      const interestBonus = calculateInterest(currentGold);
+      const totalGain = blindReward + handsBonus + interestBonus + bonusUsury;
+
+      setMoney(currentGold + totalGain);
+      setRoundEarnings({
+        blindReward,
+        handsBonus,
+        interestBonus,
+        usuryBonus: bonusUsury,
+        total: totalGain,
+      });
+
       setPhase('round_won');
       setAnnouncement(
-        `VITTORIA DEL BLIND! ${breakdown.displayName}: +${breakdown.finalScore} PTS. Incassati +$${reward} d'oro!`
+        `VITTORIA! ${breakdown.displayName}: +${breakdown.finalScore} PTS. Guadagnati +$${totalGain} d'oro (incluso +$${interestBonus} di interesse)!`
       );
     } else if (newHands === 0) {
       setPhase('game_over');
@@ -349,8 +385,49 @@ export const App: React.FC = () => {
     setFocusedIndex,
   ]);
 
-  // Avanza al Blind successivo
-  const handleContinueAfterWin = useCallback(() => {
+  // Transizione al Negozio dopo la vittoria
+  const handleGoToShop = useCallback(() => {
+    const items = generateShopItems(equippedJokers);
+    setShopItems(items);
+    setRerollCost(5);
+    setPhase('shop');
+    setAnnouncement('Sei entrato nella Bottega della Taverna. Acquista Jolly o pergamene.');
+  }, [equippedJokers]);
+
+  // Acquisto articolo nel negozio
+  const handleBuyShopItem = useCallback((item: ShopItem) => {
+    if (money < item.cost) return;
+
+    if (item.type === 'joker') {
+      if (equippedJokers.length >= 5) {
+        setAnnouncement('Spazio esaurito: hai già 5 Jolly equipaggiati!');
+        return;
+      }
+      const joker = item.payload as Joker;
+      setEquippedJokers((prev) => [...prev, joker]);
+    } else if (item.type === 'hand_upgrade') {
+      const { handType } = item.payload as { handType: HandType };
+      setHandLevels((prev) => upgradeHandLevel(prev, handType));
+    }
+
+    setMoney((prev) => prev - item.cost);
+    setShopItems((prev) => prev.filter((i) => i.id !== item.id));
+    setAnnouncement(`Acquistato: ${item.name} per $${item.cost}.`);
+  }, [money, equippedJokers.length]);
+
+  // Reroll delle offerte del negozio
+  const handleRerollShop = useCallback(() => {
+    if (money < rerollCost) return;
+
+    setMoney((prev) => prev - rerollCost);
+    const newItems = generateShopItems(equippedJokers);
+    setShopItems(newItems);
+    setRerollCost((prev) => prev + 1);
+    setAnnouncement('Merci della bottega rinfrescate.');
+  }, [money, rerollCost, equippedJokers]);
+
+  // Uscita dal Negozio verso il prossimo Blind
+  const handleLeaveShop = useCallback(() => {
     if (activeBlindType === 'small') {
       setActiveBlindType('big');
       setPhase('select_blind');
@@ -371,11 +448,12 @@ export const App: React.FC = () => {
     }
   }, [activeBlindType, ante]);
 
-  // Ricomincia Run
+  // Ricomincia la Run
   const handleRestartRun = useCallback(() => {
     setAnte(1);
     setActiveBlindType('small');
     setMoney(4);
+    setHandLevels(createInitialHandLevels());
     setEquippedJokers([JOKERS_ROSTER.court_jester]);
     setPendingBonusDiscards(0);
     setPendingBonusHands(0);
@@ -385,7 +463,7 @@ export const App: React.FC = () => {
     setAnnouncement('Nuova partita avviata. Ante 1 - Scegli il Blind.');
   }, []);
 
-  // Listener globale scorciatoie
+  // Scorciatoie globali
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
@@ -414,7 +492,7 @@ export const App: React.FC = () => {
       } else if (phase === 'round_won') {
         if (e.key === 'Enter') {
           e.preventDefault();
-          handleContinueAfterWin();
+          handleGoToShop();
         }
       }
     };
@@ -431,7 +509,7 @@ export const App: React.FC = () => {
     discardsRemaining,
     handlePlayHand,
     handleDiscard,
-    handleContinueAfterWin,
+    handleGoToShop,
   ]);
 
   const scoreProgressPercent = Math.min(
@@ -499,7 +577,7 @@ export const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Pannello Jolly Equipaggiati (sempre visibile) */}
+      {/* Pannello Jolly Equipaggiati */}
       <JokerSlots
         equippedJokers={equippedJokers}
         onSellJoker={handleSellJoker}
@@ -555,14 +633,12 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Anteprima Mano con Calcolo e Bonus Jolly */}
           <HandPreview
             evaluatedHand={evaluatedHand}
             selectedCount={selectedCardIds.length}
             previewBreakdown={previewBreakdown}
           />
 
-          {/* Gruppo Mano con Roving Tabindex */}
           <section
             className="hand-container"
             role="group"
@@ -589,7 +665,6 @@ export const App: React.FC = () => {
             })}
           </section>
 
-          {/* Controlli Azione */}
           <PlayControls
             selectedCount={selectedCardIds.length}
             handsRemaining={handsRemaining}
@@ -602,31 +677,69 @@ export const App: React.FC = () => {
         </main>
       )}
 
-      {/* FASE 3: VITTORIA DEL ROUND */}
-      {phase === 'round_won' && (
+      {/* FASE 3: VITTORIA DEL ROUND CON RESOCONTO ECONOMICO */}
+      {phase === 'round_won' && roundEarnings && (
         <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Vittoria Blind">
           <div className="outcome-banner banner-won pixel-panel">
             <h2 className="outcome-title">[ OBIETTIVO RAGGIUNTO! BLIND SUPERATO ]</h2>
             <p className="outcome-desc">
               Punteggio ottenuto: <strong>{score}</strong> su <strong>{currentBlind.scoreTarget}</strong>.
             </p>
-            <div className="outcome-rewards">
-              <span>Ricompensa Base: +${currentBlind.rewardMoney}</span>
-              <span>Bonus Mani Avanzate: +${handsRemaining}</span>
+
+            <div className="economic-receipt pixel-panel">
+              <span className="receipt-title">[ RESOCONTO BOTTINO DELLA TAVERNA ]</span>
+              <div className="receipt-row">
+                <span>Taglia Base del Blind:</span>
+                <span className="status-gold">+${roundEarnings.blindReward}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Mani Inutilizzate Avanzate:</span>
+                <span className="status-gold">+${roundEarnings.handsBonus}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Interesse Taverna ($1 ogni $5):</span>
+                <span className="status-gold">+${roundEarnings.interestBonus}</span>
+              </div>
+              {roundEarnings.usuryBonus > 0 && (
+                <div className="receipt-row">
+                  <span>Bonus Usuraio di Borgo:</span>
+                  <span className="status-gold">+${roundEarnings.usuryBonus}</span>
+                </div>
+              )}
+              <div className="receipt-row total-row">
+                <span>Totale Incassato nel Forziere:</span>
+                <span className="status-gold">+${roundEarnings.total}</span>
+              </div>
             </div>
+
             <button
               type="button"
               className="pixel-btn pixel-btn-blood btn-continue-win"
-              onClick={handleContinueAfterWin}
-              aria-label="Procedi al prossimo Blind con tasto Invio"
+              onClick={handleGoToShop}
+              aria-label="Entra nella bottega della taverna con tasto Invio"
             >
-              [ PROCEDI AL PROSSIMO BLIND (INVIO) ]
+              [ ENTRA NELLA BOTTEGA DELLA TAVERNA (INVIO) ]
             </button>
           </div>
         </section>
       )}
 
-      {/* FASE 4: SCONFITTA (GAME OVER) */}
+      {/* FASE 4: BOTTEGA DELLA TAVERNA (SHOP) */}
+      {phase === 'shop' && (
+        <ShopView
+          money={money}
+          items={shopItems}
+          rerollCost={rerollCost}
+          equippedJokersCount={equippedJokers.length}
+          maxJokerSlots={5}
+          handLevels={handLevels}
+          onBuyItem={handleBuyShopItem}
+          onReroll={handleRerollShop}
+          onLeaveShop={handleLeaveShop}
+        />
+      )}
+
+      {/* FASE 5: SCONFITTA (GAME OVER) */}
       {phase === 'game_over' && (
         <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Game Over">
           <div className="outcome-banner banner-lost pixel-panel">
@@ -642,7 +755,7 @@ export const App: React.FC = () => {
         </section>
       )}
 
-      {/* FASE 5: VITTORIA DELLA RUN (ANTE 8) */}
+      {/* FASE 6: VITTORIA DELLA RUN (ANTE 8) */}
       {phase === 'victory' && (
         <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Vittoria Totale">
           <div className="outcome-banner banner-won pixel-panel">
