@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Blind, PlayingCard } from '../types/game';
+import type { Blind, Joker, PlayingCard } from '../types/game';
 import { createStandardDeck, shuffleDeck, drawCards, formatRank, getSuitLabel } from '../game/deck';
 import { evaluateHand } from '../game/handEvaluator';
 import { calculateScore, type ScoreBreakdown } from '../game/scoring';
 import { createAnteBlinds } from '../game/blinds';
+import { JOKERS_ROSTER } from '../game/jokers';
 import { useRovingTabindex } from '../hooks/useKeyboardNav';
 import { CardView } from './CardView';
 import { HandPreview } from './HandPreview';
 import { PlayControls } from './PlayControls';
 import { BlindSelect } from './BlindSelect';
+import { JokerSlots } from './JokerSlots';
 import { HelpDialog } from './HelpDialog';
 import '../styles/pixel-theme.css';
 import './App.css';
+
+const INITIAL_DISCARDS_COUNT = 4;
 
 export const App: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -22,6 +26,9 @@ export const App: React.FC = () => {
   const [phase, setPhase] = useState<'select_blind' | 'in_blind' | 'round_won' | 'game_over' | 'victory'>('select_blind');
   const [activeBlindType, setActiveBlindType] = useState<'small' | 'big' | 'boss'>('small');
   const [money, setMoney] = useState<number>(4);
+
+  // Equipaggiamento Jolly (inizia con il Giullare di Corte per familiarizzare subito)
+  const [equippedJokers, setEquippedJokers] = useState<Joker[]>([JOKERS_ROSTER.court_jester]);
 
   // Modificatori accumulati dai Tag
   const [pendingBonusDiscards, setPendingBonusDiscards] = useState<number>(0);
@@ -35,6 +42,7 @@ export const App: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [handsRemaining, setHandsRemaining] = useState<number>(4);
   const [discardsRemaining, setDiscardsRemaining] = useState<number>(4);
+  const [startingDiscards, setStartingDiscards] = useState<number>(INITIAL_DISCARDS_COUNT);
   const [lastPlayedBreakdown, setLastPlayedBreakdown] = useState<ScoreBreakdown | null>(null);
 
   // Mazzo e Mano
@@ -43,7 +51,6 @@ export const App: React.FC = () => {
   const [, setDiscardPile] = useState<PlayingCard[]>([]);
   const [announcement, setAnnouncement] = useState('Seleziona il prossimo Blind da affrontare.');
 
-  // Aggiorna currentBlind quando cambia l'activeBlindType o l'ante
   useEffect(() => {
     setCurrentBlind(anteBlinds[activeBlindType]);
   }, [anteBlinds, activeBlindType]);
@@ -53,12 +60,12 @@ export const App: React.FC = () => {
     return hand.filter((c) => selectedCardIds.includes(c.id));
   }, [hand, selectedCardIds]);
 
-  // Valutazione della mano
+  // Valutazione della mano base
   const evaluatedHand = useMemo(() => {
     return evaluateHand(selectedCards);
   }, [selectedCards]);
 
-  // Regola Boss Debuff (es. Ante 1 Lama del Boia azzera cuori)
+  // Regola Boss Debuff
   const isCardDebuffed = useCallback((card: PlayingCard): boolean => {
     if (currentBlind.type !== 'boss' || !currentBlind.bossRule) return false;
     if (currentBlind.bossRule.id === 'executioner_blade' && card.suit === 'hearts') return true;
@@ -67,24 +74,53 @@ export const App: React.FC = () => {
     return false;
   }, [currentBlind]);
 
+  const discardsUsedThisRound = Math.max(0, startingDiscards - discardsRemaining);
+
+  // Calcolo stima punteggio in tempo reale (inclusi i bonus dei Jolly)
+  const previewBreakdown = useMemo(() => {
+    if (selectedCards.length === 0) return null;
+    return calculateScore(evaluatedHand, isCardDebuffed, equippedJokers, {
+      discardsUsedThisRound,
+      handsRemaining,
+      money,
+    });
+  }, [selectedCards.length, evaluatedHand, isCardDebuffed, equippedJokers, discardsUsedThisRound, handsRemaining, money]);
+
+  // Gestione equipaggiamento / vendita Jolly
+  const handleEquipJoker = useCallback((joker: Joker) => {
+    setEquippedJokers((prev) => {
+      if (prev.length >= 5 || prev.some((j) => j.id === joker.id)) return prev;
+      return [...prev, joker];
+    });
+    setAnnouncement(`Jolly equipaggiato: ${joker.name}.`);
+  }, []);
+
+  const handleSellJoker = useCallback((jokerId: string) => {
+    const targetJoker = equippedJokers.find((j) => j.id === jokerId);
+    if (!targetJoker) return;
+
+    setEquippedJokers((prev) => prev.filter((j) => j.id !== jokerId));
+    setMoney((prev) => prev + targetJoker.sellValue);
+    setAnnouncement(`Jolly venduto: ${targetJoker.name}. Ricevuti +$${targetJoker.sellValue}.`);
+  }, [equippedJokers]);
+
   // Avvio di un Blind
   const startBlindSession = useCallback((blindToPlay: Blind) => {
     setCurrentBlind(blindToPlay);
 
-    // Gestione regole speciali Boss all'avvio
-    let startingDiscards = 4 + pendingBonusDiscards;
-    let startingHands = 4 + pendingBonusHands;
+    let roundDiscards = 4 + pendingBonusDiscards;
+    let roundHands = 4 + pendingBonusHands;
     let handSize = 8;
 
     if (blindToPlay.type === 'boss' && blindToPlay.bossRule) {
       if (blindToPlay.bossRule.id === 'thorn_shroud') {
-        startingDiscards = Math.max(1, startingDiscards - 1);
+        roundDiscards = Math.max(1, roundDiscards - 1);
       }
       if (blindToPlay.bossRule.id === 'iron_cage') {
         handSize = 7;
       }
       if (blindToPlay.bossRule.id === 'tavern_tyrant') {
-        startingHands = 3;
+        roundHands = 3;
       }
     }
 
@@ -96,8 +132,9 @@ export const App: React.FC = () => {
     setDiscardPile([]);
     setSelectedCardIds([]);
     setScore(0);
-    setHandsRemaining(startingHands);
-    setDiscardsRemaining(startingDiscards);
+    setHandsRemaining(roundHands);
+    setDiscardsRemaining(roundDiscards);
+    setStartingDiscards(roundDiscards);
     setPendingBonusDiscards(0);
     setPendingBonusHands(0);
     setLastPlayedBreakdown(null);
@@ -124,14 +161,13 @@ export const App: React.FC = () => {
       setPendingBonusHands((prev) => prev + tag.bonusHands!);
     }
 
-    // Avanza al blind successivo
     if (blindToSkip.type === 'small') {
       setActiveBlindType('big');
     } else if (blindToSkip.type === 'big') {
       setActiveBlindType('boss');
     }
 
-    setAnnouncement(`Blind saltato! Riscatto ${tag.name}: ${tag.description}`);
+    setAnnouncement(`Blind saltato! Riscattato ${tag.name}: ${tag.description}`);
   }, [money]);
 
   // Selezione della carta per ID
@@ -151,7 +187,7 @@ export const App: React.FC = () => {
     });
   }, [phase]);
 
-  // Selezione della carta per indice con tastiera (Spazio)
+  // Selezione tastiera (Spazio)
   const handleSelectByIndex = useCallback((index: number) => {
     const targetCard = hand[index];
     if (targetCard) {
@@ -186,19 +222,28 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Boss Rule: Editto Inquisitorio (Pair e Two Pair bloccate)
     if (
       currentBlind.type === 'boss' &&
       currentBlind.bossRule?.id === 'inquisitor_decree' &&
       (evaluatedHand.type === 'pair' || evaluatedHand.type === 'two_pair')
     ) {
-      setAnnouncement('Azione respinta! L\'Editto Inquisitorio vieta Pair e Two Pair.');
+      setAnnouncement('Azione bloccata: l\'Editto Inquisitorio vieta Pair e Two Pair.');
       return;
     }
 
-    const breakdown = calculateScore(evaluatedHand, isCardDebuffed);
+    const breakdown = calculateScore(evaluatedHand, isCardDebuffed, equippedJokers, {
+      discardsUsedThisRound,
+      handsRemaining,
+      money,
+    });
+
     const newScore = score + breakdown.finalScore;
     const newHands = handsRemaining - 1;
+
+    // Aggiungi eventuale oro generato istantaneamente dai Jolly (es. L'Alchimista)
+    if (breakdown.bonusMoney > 0) {
+      setMoney((prev) => prev + breakdown.bonusMoney);
+    }
 
     // Rimuovi carte giocate
     const playedCards = hand.filter((c) => selectedCardIds.includes(c.id));
@@ -220,16 +265,29 @@ export const App: React.FC = () => {
     setLastPlayedBreakdown(breakdown);
 
     if (newScore >= currentBlind.scoreTarget) {
-      // Calcolo ricompensa vittoria
-      const reward = currentBlind.rewardMoney + newHands;
+      // Trigger Jolly di fine blind (es. L'Usuraio di Borgo)
+      let bonusUsury = 0;
+      for (const j of equippedJokers) {
+        if (j.onBlindWon) {
+          const res = j.onBlindWon({
+            handsRemaining: newHands,
+            discardsRemaining,
+            money,
+            ante,
+          });
+          if (res?.addMoney) bonusUsury += res.addMoney;
+        }
+      }
+
+      const reward = currentBlind.rewardMoney + newHands + bonusUsury;
       setMoney((prev) => prev + reward);
       setPhase('round_won');
       setAnnouncement(
-        `VITTORIA DEL BLIND! ${breakdown.displayName} ti porta a ${newScore} punti. Incassi +$${reward}!`
+        `VITTORIA DEL BLIND! ${breakdown.displayName}: +${breakdown.finalScore} PTS. Incassati +$${reward} d'oro!`
       );
     } else if (newHands === 0) {
       setPhase('game_over');
-      setAnnouncement(`SCONFITTA! Mani esaurite senza superare la soglia di ${currentBlind.scoreTarget}.`);
+      setAnnouncement(`SCONFITTA! Mani esaurite senza raggiungere ${currentBlind.scoreTarget} punti.`);
     } else {
       setAnnouncement(
         `${breakdown.displayName}: +${breakdown.finalScore} PTS. Totale: ${newScore}/${currentBlind.scoreTarget}. Mani rimaste: ${newHands}.`
@@ -242,9 +300,14 @@ export const App: React.FC = () => {
     currentBlind,
     evaluatedHand,
     isCardDebuffed,
+    equippedJokers,
+    discardsUsedThisRound,
+    money,
     score,
     hand,
     deck,
+    discardsRemaining,
+    ante,
     setFocusedIndex,
   ]);
 
@@ -254,7 +317,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Boss Rule: Tassa del Siniscalco (Scarto costa $1)
     if (currentBlind.type === 'boss' && currentBlind.bossRule?.id === 'taxman_leech') {
       if (money < 1) {
         setAnnouncement('Non hai abbastanza oro! La Tassa del Siniscalco richiede $1 per scartare.');
@@ -267,7 +329,6 @@ export const App: React.FC = () => {
     const remainingHand = hand.filter((c) => !selectedCardIds.includes(c.id));
     setDiscardPile((prev) => [...prev, ...discardedCards]);
 
-    // Ricarica mano
     const { drawn, remaining: newDeck } = drawCards(deck, discardedCards.length);
     const newHand = [...remainingHand, ...drawn];
 
@@ -288,7 +349,7 @@ export const App: React.FC = () => {
     setFocusedIndex,
   ]);
 
-  // Avanza al Blind successivo dopo una vittoria
+  // Avanza al Blind successivo
   const handleContinueAfterWin = useCallback(() => {
     if (activeBlindType === 'small') {
       setActiveBlindType('big');
@@ -297,7 +358,6 @@ export const App: React.FC = () => {
       setActiveBlindType('boss');
       setPhase('select_blind');
     } else if (activeBlindType === 'boss') {
-      // Vittoria del Boss Blind
       if (ante >= 8) {
         setPhase('victory');
         setAnnouncement('TRIONFO SUPREMO! Hai sconfitto tutti gli 8 Ante della Taverna!');
@@ -311,11 +371,12 @@ export const App: React.FC = () => {
     }
   }, [activeBlindType, ante]);
 
-  // Ricomincia la Run da zero
+  // Ricomincia Run
   const handleRestartRun = useCallback(() => {
     setAnte(1);
     setActiveBlindType('small');
     setMoney(4);
+    setEquippedJokers([JOKERS_ROSTER.court_jester]);
     setPendingBonusDiscards(0);
     setPendingBonusHands(0);
     setScore(0);
@@ -324,7 +385,7 @@ export const App: React.FC = () => {
     setAnnouncement('Nuova partita avviata. Ante 1 - Scegli il Blind.');
   }, []);
 
-  // Listener globale per scorciatoie
+  // Listener globale scorciatoie
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
@@ -438,7 +499,14 @@ export const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Barra Progresso Punteggio (visibile durante la partita) */}
+      {/* Pannello Jolly Equipaggiati (sempre visibile) */}
+      <JokerSlots
+        equippedJokers={equippedJokers}
+        onSellJoker={handleSellJoker}
+        onEquipJoker={handleEquipJoker}
+      />
+
+      {/* Barra Progresso Punteggio */}
       {phase === 'in_blind' && (
         <div
           className="score-progress-bar-container"
@@ -452,7 +520,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* FASE 1: SCHERMATA SELEZIONE BLIND */}
+      {/* FASE 1: SELEZIONE BLIND */}
       {phase === 'select_blind' && (
         <BlindSelect
           ante={ante}
@@ -465,10 +533,9 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* FASE 2: TAVOLO DI GIOCO (IN BLIND) */}
+      {/* FASE 2: TAVOLO DI GIOCO */}
       {phase === 'in_blind' && (
         <main className="tavern-table pixel-panel pixel-panel-blood" id="main-content">
-          {/* Box Regola Boss attiva */}
           {currentBlind.type === 'boss' && currentBlind.bossRule && (
             <aside className="boss-warning-panel pixel-panel" aria-label="Regola del Boss Attiva">
               <span className="boss-warning-title">[ ATTENZIONE: REGOLA DEL BOSS ATTIVA ]</span>
@@ -488,8 +555,12 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Anteprima Mano */}
-          <HandPreview evaluatedHand={evaluatedHand} selectedCount={selectedCardIds.length} />
+          {/* Anteprima Mano con Calcolo e Bonus Jolly */}
+          <HandPreview
+            evaluatedHand={evaluatedHand}
+            selectedCount={selectedCardIds.length}
+            previewBreakdown={previewBreakdown}
+          />
 
           {/* Gruppo Mano con Roving Tabindex */}
           <section
@@ -541,7 +612,7 @@ export const App: React.FC = () => {
             </p>
             <div className="outcome-rewards">
               <span>Ricompensa Base: +${currentBlind.rewardMoney}</span>
-              <span>Bonus Mani Rimanenti: +${handsRemaining}</span>
+              <span>Bonus Mani Avanzate: +${handsRemaining}</span>
             </div>
             <button
               type="button"
@@ -571,7 +642,7 @@ export const App: React.FC = () => {
         </section>
       )}
 
-      {/* FASE 5: VITTORIA DELLA RUN (ANTE 8 COMPLETATA) */}
+      {/* FASE 5: VITTORIA DELLA RUN (ANTE 8) */}
       {phase === 'victory' && (
         <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Vittoria Totale">
           <div className="outcome-banner banner-won pixel-panel">

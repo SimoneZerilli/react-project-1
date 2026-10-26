@@ -81,14 +81,24 @@ export interface JokerScoringContext {
   evaluatedHand: EvaluatedHand;
   currentChips: number;
   currentMult: number;
-  state: GameState;
+  discardsUsedThisRound: number;
+  handsRemaining: number;
+  money: number;
 }
 
 export interface JokerScoringResult {
   addChips?: number;
   addMult?: number;
   multiplyMult?: number;
+  addMoney?: number;
   message?: string;
+}
+
+export interface JokerBlindWonContext {
+  handsRemaining: number;
+  discardsRemaining: number;
+  money: number;
+  ante: number;
 }
 
 export interface Joker {
@@ -99,7 +109,7 @@ export interface Joker {
   cost: number;
   sellValue: number;
   onHandScoring?: (ctx: JokerScoringContext) => JokerScoringResult | null;
-  onBlindWon?: (state: GameState) => { addMoney?: number; message?: string } | null;
+  onBlindWon?: (ctx: JokerBlindWonContext) => { addMoney?: number; message?: string } | null;
 }
 
 // --- SHOP ---

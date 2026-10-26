@@ -94,3 +94,24 @@
   letter-spacing: 0.05em;
 }
 
+.joker-stat-bonus {
+  font-size: 0.65rem;
+  color: var(--color-gold-bright);
+}
+
+.triggered-jokers-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.joker-tag-pill {
+  font-size: 0.68rem;
+  background-color: var(--bg-surface);
+  color: var(--color-gold-bright);
+  border: 1px solid var(--color-gold);
+  padding: 2px 6px;
+}
+
