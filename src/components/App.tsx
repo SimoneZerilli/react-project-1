@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { PlayingCard } from '../types/game';
 import { createStandardDeck, shuffleDeck, drawCards, formatRank, getSuitLabel } from '../game/deck';
+import { evaluateHand } from '../game/handEvaluator';
 import { useRovingTabindex } from '../hooks/useKeyboardNav';
 import { CardView } from './CardView';
+import { HandPreview } from './HandPreview';
 import { HelpDialog } from './HelpDialog';
 import '../styles/pixel-theme.css';
 import './App.css';
@@ -23,6 +25,15 @@ export const App: React.FC = () => {
   const [announcement, setAnnouncement] = useState(
     'Mano di 8 carte distribuita. Usa le Frecce Sinistra e Destra per scorrere, Spazio per selezionare.'
   );
+
+  // Carte selezionate e valutazione della mano in tempo reale tramite la funzione pura
+  const selectedCards = useMemo(() => {
+    return hand.filter((c) => selectedCardIds.includes(c.id));
+  }, [hand, selectedCardIds]);
+
+  const evaluatedHand = useMemo(() => {
+    return evaluateHand(selectedCards);
+  }, [selectedCards]);
 
   // Selezione della carta per ID
   const toggleCardSelection = useCallback((cardId: string) => {
@@ -155,7 +166,7 @@ export const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Tavolo da Gioco con Mano di Carte e Navigazione Tastiera */}
+      {/* Tavolo da Gioco con Mano di Carte e Riconoscimento Combinazioni */}
       <main className="tavern-table pixel-panel pixel-panel-blood" id="main-content">
         <div className="table-controls">
           <div className="selection-counter">
@@ -172,28 +183,41 @@ export const App: React.FC = () => {
           </button>
         </div>
 
+        {/* Anteprima Mano di Poker Rilevata in Tempo Reale */}
+        <HandPreview
+          evaluatedHand={evaluatedHand}
+          selectedCount={selectedCardIds.length}
+        />
+
         {/* Gruppo Mano Accessibile WAI-ARIA con Roving Tabindex */}
         <section
           className="hand-container"
           role="group"
-          aria-label={`Mano corrente di ${hand.length} carte. Usa le frecce direzionali sinistra e destra per navigare, e barra spaziatrice per selezionare o deselezionare.`}
+          aria-label={`Mano corrente di ${hand.length} carte. Usa freccia sinistra e destra per navigare, e Spazio per selezionare.`}
           onKeyDown={handleHandKeyDown}
         >
-          {hand.map((card, index) => (
-            <CardView
-              key={card.id}
-              ref={setItemRef(index)}
-              card={card}
-              isSelected={selectedCardIds.includes(card.id)}
-              isFocused={focusedIndex === index}
-              onToggle={toggleCardSelection}
-              onFocus={() => setFocusedIndex(index)}
-            />
-          ))}
+          {hand.map((card, index) => {
+            const isSelected = selectedCardIds.includes(card.id);
+            const isScoring =
+              isSelected && evaluatedHand.scoringCards.some((sc) => sc.id === card.id);
+
+            return (
+              <CardView
+                key={card.id}
+                ref={setItemRef(index)}
+                card={card}
+                isSelected={isSelected}
+                isFocused={focusedIndex === index}
+                isScoring={isScoring}
+                onToggle={toggleCardSelection}
+                onFocus={() => setFocusedIndex(index)}
+              />
+            );
+          })}
         </section>
 
         <div className="step-indicator">
-          <span>NAVIGAZIONE TASTIERA ATTIVA: FRECCE &lt;- e -&gt; PER SCORRERE, SPAZIO PER SELEZIONARE</span>
+          <span>PASSO 4 COMPLETATO: MOTORE RICONOSCIMENTO MANI DI POKER ATTIVO IN TEMPO REALE</span>
         </div>
       </main>
 

@@ -7,6 +7,7 @@ interface CardViewProps {
   card: PlayingCard;
   isSelected?: boolean;
   isFocused?: boolean;
+  isScoring?: boolean;
   onToggle?: (cardId: string) => void;
   onFocus?: () => void;
 }
@@ -15,6 +16,7 @@ export const CardView = forwardRef<HTMLDivElement, CardViewProps>(({
   card,
   isSelected = false,
   isFocused = false,
+  isScoring = false,
   onToggle,
   onFocus,
 }, ref) => {
@@ -32,9 +34,13 @@ export const CardView = forwardRef<HTMLDivElement, CardViewProps>(({
       ref={ref}
       role="checkbox"
       aria-checked={isSelected}
-      aria-label={`${rankLabel} di ${suitLabel}, vale ${baseChips} chips. ${isSelected ? 'Selezionata' : 'Non selezionata'}`}
+      aria-label={`${rankLabel} di ${suitLabel}, vale ${baseChips} chips. ${
+        isSelected ? 'Selezionata' : 'Non selezionata'
+      }. ${isScoring ? 'Valida per il punteggio.' : ''}`}
       tabIndex={isFocused ? 0 : -1}
-      className={`pixel-card suit-${card.suit} ${isSelected ? 'is-selected' : ''}`}
+      className={`pixel-card suit-${card.suit} ${isSelected ? 'is-selected' : ''} ${
+        isScoring ? 'is-scoring' : ''
+      }`}
       onClick={handleClick}
       onFocus={onFocus}
       data-card-id={card.id}
@@ -51,7 +57,13 @@ export const CardView = forwardRef<HTMLDivElement, CardViewProps>(({
 
       <div className="card-bottom">
         <span className="card-chips">+{baseChips}</span>
-        <span className="card-suit-badge">[{suitShort}]</span>
+        {isScoring ? (
+          <span className="scoring-indicator" title="Concorre al punteggio">
+            [*]
+          </span>
+        ) : (
+          <span className="card-suit-badge">[{suitShort}]</span>
+        )}
       </div>
     </div>
   );

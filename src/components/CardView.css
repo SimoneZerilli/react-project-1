@@ -95,6 +95,16 @@
   font-weight: bold;
 }
 
+.scoring-indicator {
+  font-size: 0.8rem;
+  color: var(--color-gold-bright);
+  font-weight: bold;
+}
+
+.pixel-card.is-scoring {
+  border-color: var(--color-gold-bright);
+}
+
 /* Semi Colori */
 .suit-hearts {
   color: #ff4d5a;

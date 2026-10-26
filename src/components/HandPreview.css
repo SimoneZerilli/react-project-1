@@ -1,0 +1,96 @@
+.hand-preview {
+  margin-bottom: 16px;
+  background-color: var(--bg-surface-elevated);
+  border: 2px solid var(--color-blood-dark);
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+}
+
+.empty-title {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  font-weight: bold;
+}
+
+.empty-sub {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.preview-header {
+  margin-bottom: 12px;
+}
+
+.preview-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.preview-hand-name {
+  color: var(--color-blood-bright);
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.preview-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.stat-box {
+  background-color: var(--bg-tavern);
+  padding: 6px 14px;
+  border: 1px solid var(--color-iron);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 90px;
+}
+
+.stat-title {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.stat-val {
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+.stat-operator {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.preview-scoring-info {
+  margin-top: 8px;
+  border-top: 1px dashed var(--color-iron-dark);
+  padding-top: 8px;
+}
+
+.scoring-cards-count {
+  font-size: 0.75rem;
+  color: var(--color-gold);
+  letter-spacing: 0.05em;
+}
+
