@@ -1,0 +1,61 @@
+.play-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.last-hand-banner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--color-blood-dark);
+}
+
+.last-hand-tag {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.last-hand-details {
+  color: var(--text-primary);
+}
+
+.action-buttons-group {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.play-btn {
+  font-size: 1.05rem;
+  padding: 12px 24px;
+}
+
+.discard-btn {
+  font-size: 1.05rem;
+  padding: 12px 24px;
+  background-color: var(--bg-surface-elevated);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none !important;
+  background-color: var(--bg-surface) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--color-iron-dark);
+}
+
