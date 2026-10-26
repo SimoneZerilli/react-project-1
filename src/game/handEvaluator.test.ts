@@ -180,3 +180,4 @@ describe('Hand Evaluator Engine (src/game/handEvaluator.ts)', () => {
     expect(res.scoringCards).toHaveLength(5);
   });
 });
+
