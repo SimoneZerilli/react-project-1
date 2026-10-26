@@ -75,19 +75,24 @@ describe('Scoring Engine (src/game/scoring.ts)', () => {
     expect(res.finalScore).toBe(368);
   });
 
-  it('dovrebbe sommare eventuali bonus permanenti delle carte', () => {
-    const cardWithBonus = makeCard(10, 20); // 10 chip base + 20 bonus
+  it('dovrebbe azzerare i chip delle carte depotenziate da una boss rule', () => {
+    const aceHeart: PlayingCard = {
+      id: 'h-14',
+      suit: 'hearts',
+      rank: 14,
+    };
     const hand: EvaluatedHand = {
       type: 'high_card',
       displayName: 'High Card',
-      scoringCards: [cardWithBonus],
+      scoringCards: [aceHeart],
       baseChips: 5,
       baseMult: 1,
     };
-    const res = calculateScore(hand);
-    expect(res.cardChips).toBe(30);
-    expect(res.totalChips).toBe(35);
-    expect(res.finalScore).toBe(35);
+    // Regola Lama del Boia: carte di cuori depotenziate
+    const res = calculateScore(hand, (c) => c.suit === 'hearts');
+    expect(res.cardChips).toBe(0);
+    expect(res.totalChips).toBe(5); // Solo baseChips
+    expect(res.finalScore).toBe(5);
   });
 });
 

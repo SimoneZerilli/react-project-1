@@ -1,4 +1,4 @@
-import type { EvaluatedHand, HandType } from './types';
+import type { EvaluatedHand, HandType, PlayingCard } from './types';
 import { getCardBaseChips } from './deck';
 
 export interface ScoreBreakdown {
@@ -15,8 +15,12 @@ export interface ScoreBreakdown {
 /**
  * Calcola il punteggio generato da una mano valutata secondo la formula:
  * Punteggio = (Base Chips + Somma Chips Carte Valide) × (Base Mult)
+ * Supporta una funzione di debuff opzionale (usata dalle Boss Rules).
  */
-export function calculateScore(evaluatedHand: EvaluatedHand): ScoreBreakdown {
+export function calculateScore(
+  evaluatedHand: EvaluatedHand,
+  isCardDebuffed?: (card: PlayingCard) => boolean
+): ScoreBreakdown {
   if (evaluatedHand.scoringCards.length === 0) {
     return {
       handType: evaluatedHand.type,
@@ -32,6 +36,9 @@ export function calculateScore(evaluatedHand: EvaluatedHand): ScoreBreakdown {
 
   // Somma dei chip conferiti da ciascuna carta che concorre alla mano
   const cardChips = evaluatedHand.scoringCards.reduce((sum, card) => {
+    if (isCardDebuffed?.(card)) {
+      return sum; // Carta depotenziata dal boss
+    }
     const cardBase = getCardBaseChips(card.rank);
     const cardBonus = card.bonusChips ?? 0;
     return sum + cardBase + cardBonus;

@@ -58,7 +58,9 @@ export interface BlindTagReward {
   id: string;
   name: string;
   description: string;
-  applyTag: (state: GameState) => Partial<GameState>;
+  rewardMoney?: number;
+  bonusDiscards?: number;
+  bonusHands?: number;
 }
 
 export interface Blind {
