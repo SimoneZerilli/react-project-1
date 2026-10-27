@@ -11,6 +11,15 @@ import {
   upgradeHandLevel,
   generateShopItems,
 } from '../game/shop';
+import {
+  createInitialRunStats,
+  recordPlayedHand,
+  recordDiscardedCards,
+  recordGoldEarned,
+  recordBlindWon,
+  recordBlindSkipped,
+  type RunStatistics,
+} from '../game/runStats';
 import { useRovingTabindex } from '../hooks/useKeyboardNav';
 import { CardView } from './CardView';
 import { HandPreview } from './HandPreview';
@@ -18,6 +27,7 @@ import { PlayControls } from './PlayControls';
 import { BlindSelect } from './BlindSelect';
 import { JokerSlots } from './JokerSlots';
 import { ShopView } from './ShopView';
+import { VictoryScreen } from './VictoryScreen';
 import { HelpDialog } from './HelpDialog';
 import '../styles/pixel-theme.css';
 import './App.css';
@@ -43,6 +53,9 @@ export const App: React.FC = () => {
   >('select_blind');
   const [activeBlindType, setActiveBlindType] = useState<'small' | 'big' | 'boss'>('small');
   const [money, setMoney] = useState<number>(4);
+
+  // Statistiche della Run
+  const [runStats, setRunStats] = useState<RunStatistics>(createInitialRunStats);
 
   // Livelli permanenti delle combinazioni di poker
   const [handLevels, setHandLevels] = useState<Record<HandType, HandLevelInfo>>(createInitialHandLevels);
@@ -90,11 +103,14 @@ export const App: React.FC = () => {
     return evaluateHand(selectedCards, handLevels);
   }, [selectedCards, handLevels]);
 
-  // Regola Boss Debuff
+  // Regole Boss: Debuff Carte
   const isCardDebuffed = useCallback((card: PlayingCard): boolean => {
     if (currentBlind.type !== 'boss' || !currentBlind.bossRule) return false;
+    // Ante 1: Cuori azzerati
     if (currentBlind.bossRule.id === 'executioner_blade' && card.suit === 'hearts') return true;
+    // Ante 5: Quadri e Fiori azzerati
     if (currentBlind.bossRule.id === 'corrupted_blood' && (card.suit === 'diamonds' || card.suit === 'clubs')) return true;
+    // Ante 7: Picche azzerate
     if (currentBlind.bossRule.id === 'grave_mist' && card.suit === 'spades') return true;
     return false;
   }, [currentBlind]);
@@ -126,6 +142,7 @@ export const App: React.FC = () => {
 
     setEquippedJokers((prev) => prev.filter((j) => j.id !== jokerId));
     setMoney((prev) => prev + targetJoker.sellValue);
+    setRunStats((prev) => recordGoldEarned(prev, targetJoker.sellValue));
     setAnnouncement(`Jolly venduto: ${targetJoker.name}. Ricevuti +$${targetJoker.sellValue}.`);
   }, [equippedJokers]);
 
@@ -137,14 +154,18 @@ export const App: React.FC = () => {
     let roundHands = 4 + pendingBonusHands;
     let handSize = 8;
 
+    // Regole Boss di inizio round
     if (blindToPlay.type === 'boss' && blindToPlay.bossRule) {
       if (blindToPlay.bossRule.id === 'thorn_shroud') {
+        // Ante 2: Cappa di Spine (-1 Discard)
         roundDiscards = Math.max(1, roundDiscards - 1);
       }
       if (blindToPlay.bossRule.id === 'iron_cage') {
+        // Ante 3: Gabbia di Ferro (7 carte in mano)
         handSize = 7;
       }
       if (blindToPlay.bossRule.id === 'tavern_tyrant') {
+        // Ante 8: Il Tiranno della Taverna (3 Mani)
         roundHands = 3;
       }
     }
@@ -178,6 +199,7 @@ export const App: React.FC = () => {
     if (tag.rewardMoney) {
       newMoney += tag.rewardMoney;
       setMoney(newMoney);
+      setRunStats((prev) => recordGoldEarned(prev, tag.rewardMoney!));
     }
     if (tag.bonusDiscards) {
       setPendingBonusDiscards((prev) => prev + tag.bonusDiscards!);
@@ -185,6 +207,8 @@ export const App: React.FC = () => {
     if (tag.bonusHands) {
       setPendingBonusHands((prev) => prev + tag.bonusHands!);
     }
+
+    setRunStats((prev) => recordBlindSkipped(prev));
 
     if (blindToSkip.type === 'small') {
       setActiveBlindType('big');
@@ -247,12 +271,13 @@ export const App: React.FC = () => {
       return;
     }
 
+    // Regola Boss Ante 4: Editto Inquisitorio
     if (
       currentBlind.type === 'boss' &&
       currentBlind.bossRule?.id === 'inquisitor_decree' &&
       (evaluatedHand.type === 'pair' || evaluatedHand.type === 'two_pair')
     ) {
-      setAnnouncement('Azione bloccata: l\'Editto Inquisitorio vieta Pair e Two Pair.');
+      setAnnouncement('Azione bloccata: l\'Editto Inquisitorio vieta categoricamente Pair e Two Pair.');
       return;
     }
 
@@ -269,7 +294,11 @@ export const App: React.FC = () => {
     if (breakdown.bonusMoney > 0) {
       currentGold += breakdown.bonusMoney;
       setMoney(currentGold);
+      setRunStats((prev) => recordGoldEarned(prev, breakdown.bonusMoney));
     }
+
+    // Aggiorna statistiche run
+    setRunStats((prev) => recordPlayedHand(prev, breakdown.finalScore, breakdown.displayName));
 
     const playedCards = hand.filter((c) => selectedCardIds.includes(c.id));
     const remainingHand = hand.filter((c) => !selectedCardIds.includes(c.id));
@@ -289,7 +318,7 @@ export const App: React.FC = () => {
     setLastPlayedBreakdown(breakdown);
 
     if (newScore >= currentBlind.scoreTarget) {
-      // Calcolo dell'economia di vittoria (Taglia + Mani avanzate + Interesse taverna + Usuraio)
+      // Calcolo dell'economia di vittoria
       let bonusUsury = 0;
       for (const j of equippedJokers) {
         if (j.onBlindWon) {
@@ -309,6 +338,8 @@ export const App: React.FC = () => {
       const totalGain = blindReward + handsBonus + interestBonus + bonusUsury;
 
       setMoney(currentGold + totalGain);
+      setRunStats((prev) => recordGoldEarned(recordBlindWon(prev), totalGain));
+
       setRoundEarnings({
         blindReward,
         handsBonus,
@@ -353,6 +384,7 @@ export const App: React.FC = () => {
       return;
     }
 
+    // Regola Boss Ante 6: Tassa del Siniscalco (Scarto costa $1)
     if (currentBlind.type === 'boss' && currentBlind.bossRule?.id === 'taxman_leech') {
       if (money < 1) {
         setAnnouncement('Non hai abbastanza oro! La Tassa del Siniscalco richiede $1 per scartare.');
@@ -364,6 +396,9 @@ export const App: React.FC = () => {
     const discardedCards = hand.filter((c) => selectedCardIds.includes(c.id));
     const remainingHand = hand.filter((c) => !selectedCardIds.includes(c.id));
     setDiscardPile((prev) => [...prev, ...discardedCards]);
+
+    // Aggiorna statistiche
+    setRunStats((prev) => recordDiscardedCards(prev, discardedCards.length));
 
     const { drawn, remaining: newDeck } = drawCards(deck, discardedCards.length);
     const newHand = [...remainingHand, ...drawn];
@@ -387,12 +422,19 @@ export const App: React.FC = () => {
 
   // Transizione al Negozio dopo la vittoria
   const handleGoToShop = useCallback(() => {
+    // Se abbiamo appena vinto il Boss Blind dell'Ante 8, trionfo finale immediato!
+    if (activeBlindType === 'boss' && ante >= 8) {
+      setPhase('victory');
+      setAnnouncement('TRIONFO SUPREMO! Hai sconfitto tutti gli 8 Ante della Taverna!');
+      return;
+    }
+
     const items = generateShopItems(equippedJokers);
     setShopItems(items);
     setRerollCost(5);
     setPhase('shop');
     setAnnouncement('Sei entrato nella Bottega della Taverna. Acquista Jolly o pergamene.');
-  }, [equippedJokers]);
+  }, [equippedJokers, activeBlindType, ante]);
 
   // Acquisto articolo nel negozio
   const handleBuyShopItem = useCallback((item: ShopItem) => {
@@ -435,26 +477,22 @@ export const App: React.FC = () => {
       setActiveBlindType('boss');
       setPhase('select_blind');
     } else if (activeBlindType === 'boss') {
-      if (ante >= 8) {
-        setPhase('victory');
-        setAnnouncement('TRIONFO SUPREMO! Hai sconfitto tutti gli 8 Ante della Taverna!');
-      } else {
-        const nextAnte = ante + 1;
-        setAnte(nextAnte);
-        setActiveBlindType('small');
-        setPhase('select_blind');
-        setAnnouncement(`Complimenti! Avanzamento ad Ante ${nextAnte}.`);
-      }
+      const nextAnte = ante + 1;
+      setAnte(nextAnte);
+      setActiveBlindType('small');
+      setPhase('select_blind');
+      setAnnouncement(`Complimenti! Avanzamento ad Ante ${nextAnte}.`);
     }
   }, [activeBlindType, ante]);
 
-  // Ricomincia la Run
+  // Ricomincia la Run dall'Ante 1
   const handleRestartRun = useCallback(() => {
     setAnte(1);
     setActiveBlindType('small');
     setMoney(4);
     setHandLevels(createInitialHandLevels());
     setEquippedJokers([JOKERS_ROSTER.court_jester]);
+    setRunStats(createInitialRunStats());
     setPendingBonusDiscards(0);
     setPendingBonusHands(0);
     setScore(0);
@@ -494,6 +532,11 @@ export const App: React.FC = () => {
           e.preventDefault();
           handleGoToShop();
         }
+      } else if (phase === 'victory' || phase === 'game_over') {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleRestartRun();
+        }
       }
     };
 
@@ -510,6 +553,7 @@ export const App: React.FC = () => {
     handlePlayHand,
     handleDiscard,
     handleGoToShop,
+    handleRestartRun,
   ]);
 
   const scoreProgressPercent = Math.min(
@@ -739,36 +783,55 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* FASE 5: SCONFITTA (GAME OVER) */}
+      {/* FASE 5: SCONFITTA (GAME OVER) CON STATISTICHE */}
       {phase === 'game_over' && (
         <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Game Over">
           <div className="outcome-banner banner-lost pixel-panel">
             <h2 className="outcome-title">[ SCONFITTA NELLA TAVERNA ]</h2>
             <p className="outcome-desc">
               Le mani sono esaurite e il tributo di {currentBlind.scoreTarget} punti non è stato pagato.
-              La run si arresta all&apos;Ante {ante}.
+              La tua corsa si arresta all&apos;Ante {ante}.
             </p>
-            <button type="button" className="pixel-btn pixel-btn-blood" onClick={handleRestartRun}>
-              [ RICOMINCIA LA RUN DALL&apos;ANTE 1 ]
+
+            <div className="economic-receipt pixel-panel">
+              <span className="receipt-title">[ CRONACHE DELLA RUN INTERROTTA ]</span>
+              <div className="receipt-row">
+                <span>Mani Giocate:</span>
+                <span className="status-gold">{runStats.handsPlayed}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Blind Conquistati:</span>
+                <span className="status-gold">{runStats.blindsWon}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Oro Totale Accumulato:</span>
+                <span className="status-gold">${runStats.totalGoldEarned}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Miglior Mano:</span>
+                <span className="status-blood">{runStats.bestHandName} (+{runStats.bestHandScore} PTS)</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-blood"
+              onClick={handleRestartRun}
+              aria-label="Ricomincia la run dall'Ante 1 con tasto Invio"
+            >
+              [ RICOMINCIA LA RUN DALL&apos;ANTE 1 (INVIO) ]
             </button>
           </div>
         </section>
       )}
 
-      {/* FASE 6: VITTORIA DELLA RUN (ANTE 8) */}
+      {/* FASE 6: TRIONFO SUPREMO (ANTE 8 COMPLETATA) */}
       {phase === 'victory' && (
-        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Vittoria Totale">
-          <div className="outcome-banner banner-won pixel-panel">
-            <h2 className="outcome-title">[ TRIONFO SUPREMO! RUN COMPLETATA ]</h2>
-            <p className="outcome-desc">
-              Hai abbattuto il Tiranno della Taverna e trionfato su tutti gli 8 Ante di Balcard!
-              Tesoro finale accumulato: <strong>${money} d&apos;oro</strong>.
-            </p>
-            <button type="button" className="pixel-btn pixel-btn-blood" onClick={handleRestartRun}>
-              [ INIZIA UNA NUOVA RUN ]
-            </button>
-          </div>
-        </section>
+        <VictoryScreen
+          money={money}
+          stats={runStats}
+          onRestart={handleRestartRun}
+        />
       )}
 
       {/* Footer */}
