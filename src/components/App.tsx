@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { Blind, HandLevelInfo, HandType, Joker, PlayingCard, ShopItem } from '../types/game';
 import { createStandardDeck, shuffleDeck, drawCards, formatRank, getSuitLabel } from '../game/deck';
 import { evaluateHand } from '../game/handEvaluator';
@@ -20,6 +20,7 @@ import {
   recordBlindSkipped,
   type RunStatistics,
 } from '../game/runStats';
+import { saveRunState, loadRunState, clearRunState, type SavedRunState } from '../game/storage';
 import { useRovingTabindex } from '../hooks/useKeyboardNav';
 import { CardView } from './CardView';
 import { HandPreview } from './HandPreview';
@@ -45,6 +46,10 @@ interface RoundEarnedSummary {
 export const App: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+
+  // Tenta il ripristino sicuro da localStorage all'avvio
+  const savedSession = useRef<SavedRunState | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Progressione Run
   const [ante, setAnte] = useState<number>(1);
@@ -86,12 +91,93 @@ export const App: React.FC = () => {
   // Mazzo e Mano
   const [deck, setDeck] = useState<PlayingCard[]>([]);
   const [hand, setHand] = useState<PlayingCard[]>([]);
-  const [, setDiscardPile] = useState<PlayingCard[]>([]);
+  const [discardPile, setDiscardPile] = useState<PlayingCard[]>([]);
   const [announcement, setAnnouncement] = useState('Seleziona il prossimo Blind da affrontare.');
 
+  // Caricamento iniziale da localStorage
   useEffect(() => {
-    setCurrentBlind(anteBlinds[activeBlindType]);
-  }, [anteBlinds, activeBlindType]);
+    const loaded = loadRunState();
+    if (loaded) {
+      savedSession.current = loaded;
+      setAnte(loaded.ante);
+      setPhase(loaded.phase === 'game_over' || loaded.phase === 'victory' ? 'select_blind' : loaded.phase);
+      setActiveBlindType(loaded.activeBlindType);
+      setMoney(loaded.money);
+      setHandLevels(loaded.handLevels);
+      setEquippedJokers(loaded.equippedJokerIds.map((id) => JOKERS_ROSTER[id]).filter(Boolean));
+      setRunStats(loaded.runStats);
+      setCurrentBlind(loaded.currentBlind);
+      setScore(loaded.score);
+      setHandsRemaining(loaded.handsRemaining);
+      setDiscardsRemaining(loaded.discardsRemaining);
+      setStartingDiscards(loaded.startingDiscards);
+      setDeck(loaded.deck);
+      setHand(loaded.hand);
+      setDiscardPile(loaded.discardPile);
+      setPendingBonusDiscards(loaded.pendingBonusDiscards);
+      setPendingBonusHands(loaded.pendingBonusHands);
+      setAnnouncement('Partita precedente ripristinata dal forziere locale.');
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Salvataggio automatico continuo dello stato della run
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    if (phase === 'game_over' || phase === 'victory') {
+      clearRunState();
+      return;
+    }
+
+    const stateToSave: SavedRunState = {
+      version: 1,
+      ante,
+      phase,
+      activeBlindType,
+      money,
+      handLevels,
+      equippedJokerIds: equippedJokers.map((j) => j.id),
+      runStats,
+      currentBlind,
+      score,
+      handsRemaining,
+      discardsRemaining,
+      startingDiscards,
+      deck,
+      hand,
+      discardPile,
+      pendingBonusDiscards,
+      pendingBonusHands,
+    };
+
+    saveRunState(stateToSave);
+  }, [
+    isInitialized,
+    ante,
+    phase,
+    activeBlindType,
+    money,
+    handLevels,
+    equippedJokers,
+    runStats,
+    currentBlind,
+    score,
+    handsRemaining,
+    discardsRemaining,
+    startingDiscards,
+    deck,
+    hand,
+    discardPile,
+    pendingBonusDiscards,
+    pendingBonusHands,
+  ]);
+
+  useEffect(() => {
+    if (phase === 'select_blind') {
+      setCurrentBlind(anteBlinds[activeBlindType]);
+    }
+  }, [anteBlinds, activeBlindType, phase]);
 
   // Carte attualmente selezionate
   const selectedCards = useMemo(() => {
@@ -106,11 +192,8 @@ export const App: React.FC = () => {
   // Regole Boss: Debuff Carte
   const isCardDebuffed = useCallback((card: PlayingCard): boolean => {
     if (currentBlind.type !== 'boss' || !currentBlind.bossRule) return false;
-    // Ante 1: Cuori azzerati
     if (currentBlind.bossRule.id === 'executioner_blade' && card.suit === 'hearts') return true;
-    // Ante 5: Quadri e Fiori azzerati
     if (currentBlind.bossRule.id === 'corrupted_blood' && (card.suit === 'diamonds' || card.suit === 'clubs')) return true;
-    // Ante 7: Picche azzerate
     if (currentBlind.bossRule.id === 'grave_mist' && card.suit === 'spades') return true;
     return false;
   }, [currentBlind]);
@@ -154,18 +237,14 @@ export const App: React.FC = () => {
     let roundHands = 4 + pendingBonusHands;
     let handSize = 8;
 
-    // Regole Boss di inizio round
     if (blindToPlay.type === 'boss' && blindToPlay.bossRule) {
       if (blindToPlay.bossRule.id === 'thorn_shroud') {
-        // Ante 2: Cappa di Spine (-1 Discard)
         roundDiscards = Math.max(1, roundDiscards - 1);
       }
       if (blindToPlay.bossRule.id === 'iron_cage') {
-        // Ante 3: Gabbia di Ferro (7 carte in mano)
         handSize = 7;
       }
       if (blindToPlay.bossRule.id === 'tavern_tyrant') {
-        // Ante 8: Il Tiranno della Taverna (3 Mani)
         roundHands = 3;
       }
     }
@@ -271,7 +350,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Regola Boss Ante 4: Editto Inquisitorio
     if (
       currentBlind.type === 'boss' &&
       currentBlind.bossRule?.id === 'inquisitor_decree' &&
@@ -297,7 +375,6 @@ export const App: React.FC = () => {
       setRunStats((prev) => recordGoldEarned(prev, breakdown.bonusMoney));
     }
 
-    // Aggiorna statistiche run
     setRunStats((prev) => recordPlayedHand(prev, breakdown.finalScore, breakdown.displayName));
 
     const playedCards = hand.filter((c) => selectedCardIds.includes(c.id));
@@ -318,7 +395,6 @@ export const App: React.FC = () => {
     setLastPlayedBreakdown(breakdown);
 
     if (newScore >= currentBlind.scoreTarget) {
-      // Calcolo dell'economia di vittoria
       let bonusUsury = 0;
       for (const j of equippedJokers) {
         if (j.onBlindWon) {
@@ -384,7 +460,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Regola Boss Ante 6: Tassa del Siniscalco (Scarto costa $1)
     if (currentBlind.type === 'boss' && currentBlind.bossRule?.id === 'taxman_leech') {
       if (money < 1) {
         setAnnouncement('Non hai abbastanza oro! La Tassa del Siniscalco richiede $1 per scartare.');
@@ -397,7 +472,6 @@ export const App: React.FC = () => {
     const remainingHand = hand.filter((c) => !selectedCardIds.includes(c.id));
     setDiscardPile((prev) => [...prev, ...discardedCards]);
 
-    // Aggiorna statistiche
     setRunStats((prev) => recordDiscardedCards(prev, discardedCards.length));
 
     const { drawn, remaining: newDeck } = drawCards(deck, discardedCards.length);
@@ -422,7 +496,6 @@ export const App: React.FC = () => {
 
   // Transizione al Negozio dopo la vittoria
   const handleGoToShop = useCallback(() => {
-    // Se abbiamo appena vinto il Boss Blind dell'Ante 8, trionfo finale immediato!
     if (activeBlindType === 'boss' && ante >= 8) {
       setPhase('victory');
       setAnnouncement('TRIONFO SUPREMO! Hai sconfitto tutti gli 8 Ante della Taverna!');
@@ -485,8 +558,9 @@ export const App: React.FC = () => {
     }
   }, [activeBlindType, ante]);
 
-  // Ricomincia la Run dall'Ante 1
+  // Ricomincia o abbandona la Run (cancella anche localStorage)
   const handleRestartRun = useCallback(() => {
+    clearRunState();
     setAnte(1);
     setActiveBlindType('small');
     setMoney(4);
@@ -498,6 +572,9 @@ export const App: React.FC = () => {
     setScore(0);
     setPhase('select_blind');
     setSelectedCardIds([]);
+    setDeck([]);
+    setHand([]);
+    setDiscardPile([]);
     setAnnouncement('Nuova partita avviata. Ante 1 - Scegli il Blind.');
   }, []);
 
@@ -575,7 +652,15 @@ export const App: React.FC = () => {
           <h1 className="tavern-title">BALCARD</h1>
         </div>
 
-        <nav aria-label="Controlli Rapidi">
+        <nav className="header-controls-group" aria-label="Controlli Rapidi">
+          <button
+            type="button"
+            className="pixel-btn btn-abandon-run"
+            onClick={handleRestartRun}
+            aria-label="Abbandona la partita attuale e riparti da zero"
+          >
+            [ REIMPOSTA RUN ]
+          </button>
           <button
             type="button"
             className="pixel-btn pixel-btn-blood"

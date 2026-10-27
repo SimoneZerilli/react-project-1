@@ -38,6 +38,25 @@
     -1px -1px 0 #000;
 }
 
+.header-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-abandon-run {
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-muted);
+}
+
+.btn-abandon-run:hover {
+  background-color: var(--color-blood-dark);
+  color: #fff;
+}
+
 .tavern-status-bar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
