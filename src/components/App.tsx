@@ -45,6 +45,19 @@ import './App.css';
 
 const INITIAL_DISCARDS_COUNT = 4;
 
+const getLocalizedHandDisplayName = (handName: string, pokerHands: Record<string, string>): string => {
+  if (!handName || handName === 'Nessuna' || handName === 'None') return handName;
+  for (const [key, val] of Object.entries(pokerHands)) {
+    if (
+      key.replace(/_/g, ' ').toLowerCase() === handName.toLowerCase() ||
+      key.toLowerCase() === handName.toLowerCase()
+    ) {
+      return val;
+    }
+  }
+  return handName;
+};
+
 interface RoundEarnedSummary {
   blindReward: number;
   handsBonus: number;
@@ -1127,7 +1140,7 @@ export const App: React.FC = () => {
             </p>
 
             <div className="economic-receipt pixel-panel">
-              <span className="receipt-title">[ {language === 'en' ? 'TAVERN BOUNTY RECEIPT' : 'RESOCONTO BOTTINO DELLA TAVERNA'} ]</span>
+              <span className="receipt-title">[ {language === 'en' ? 'Tavern Bounty Receipt' : 'Resoconto Bottino della Taverna'} ]</span>
               <div className="receipt-row">
                 <span>{t.blindRewardLabel}</span>
                 <span className="status-gold">+${roundEarnings.blindReward}</span>
@@ -1210,7 +1223,9 @@ export const App: React.FC = () => {
               </div>
               <div className="receipt-row">
                 <span>{language === 'en' ? 'Highest Hand:' : 'Miglior Mano:'}</span>
-                <span className="status-blood">{runStats.bestHandName} (+{runStats.bestHandScore} PTS)</span>
+                <span className="status-blood">
+                  {getLocalizedHandDisplayName(runStats.bestHandName, t.pokerHands)} (+{runStats.bestHandScore} PTS)
+                </span>
               </div>
             </div>
 

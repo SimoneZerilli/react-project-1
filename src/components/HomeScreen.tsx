@@ -14,6 +14,19 @@ interface HomeScreenProps {
   onInstallApp: () => void;
 }
 
+const getLocalizedHandDisplayName = (handName: string, pokerHands: Record<string, string>): string => {
+  if (!handName || handName === 'Nessuna' || handName === 'None') return handName;
+  for (const [key, val] of Object.entries(pokerHands)) {
+    if (
+      key.replace(/_/g, ' ').toLowerCase() === handName.toLowerCase() ||
+      key.toLowerCase() === handName.toLowerCase()
+    ) {
+      return val;
+    }
+  }
+  return handName;
+};
+
 // Interfaccia per l'evento di installazione PWA standard del browser
 export interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -127,7 +140,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="home-stat-item">
             <span className="home-stat-label">{language === 'it' ? 'Miglior Mano:' : 'Best Hand:'}</span>
             <span className="home-stat-val status-blood">
-              {stats.bestHandName ? `${stats.bestHandName} (+${stats.bestHandScore})` : '-'}
+              {stats.bestHandName
+                ? `${getLocalizedHandDisplayName(stats.bestHandName, t.pokerHands)} (+${stats.bestHandScore})`
+                : '-'}
             </span>
           </div>
         </div>

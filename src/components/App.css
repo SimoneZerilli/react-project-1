@@ -308,8 +308,11 @@
 }
 
 .outcome-title {
-  font-size: 1.4rem;
-  letter-spacing: 0.1em;
+  font-family: var(--font-small) !important;
+  font-size: 1.55rem;
+  letter-spacing: 0.06em;
+  font-weight: bold;
+  text-transform: none;
 }
 
 .banner-won .outcome-title {
@@ -321,22 +324,27 @@
 }
 
 .outcome-desc {
+  font-family: var(--font-small);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   line-height: 1.5;
+  text-transform: none;
 }
 
 .outcome-rewards {
+  font-family: var(--font-small);
   display: flex;
   gap: 20px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--color-gold-bright);
   padding: 10px 16px;
   background-color: var(--bg-tavern);
   border: 1px solid var(--color-iron);
+  text-transform: none;
 }
 
 .economic-receipt {
+  font-family: var(--font-small);
   width: 100%;
   max-width: 440px;
   background-color: var(--bg-surface-elevated);
@@ -346,23 +354,28 @@
   flex-direction: column;
   gap: 8px;
   text-align: left;
+  text-transform: none;
 }
 
 .receipt-title {
-  font-size: 0.75rem;
+  font-family: var(--font-small) !important;
+  font-size: 0.85rem;
   color: var(--color-gold-bright);
   letter-spacing: 0.08em;
   font-weight: bold;
   border-bottom: 1px solid var(--color-iron);
   padding-bottom: 6px;
   text-align: center;
+  text-transform: none;
 }
 
 .receipt-row {
+  font-family: var(--font-small);
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-primary);
+  text-transform: none;
 }
 
 .receipt-row.total-row {

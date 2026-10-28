@@ -24,21 +24,28 @@
 }
 
 .joker-panel-tag {
-  font-size: 0.65rem;
+  font-family: var(--font-small);
+  font-size: 0.75rem;
   color: var(--text-muted);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
+  text-transform: none;
 }
 
 .joker-slots-title {
-  font-size: 0.95rem;
+  font-family: var(--font-small) !important;
+  font-size: 1.1rem;
   color: var(--text-primary);
   letter-spacing: 0.05em;
+  font-weight: bold;
+  text-transform: none;
 }
 
 .joker-slots-hint {
-  font-size: 0.72rem;
+  font-family: var(--font-small);
+  font-size: 0.78rem;
   color: var(--text-muted);
   font-style: italic;
+  text-transform: none;
 }
 
 .slots-row {
@@ -63,14 +70,18 @@
 }
 
 .empty-slot-label {
-  font-size: 0.72rem;
+  font-family: var(--font-small);
+  font-size: 0.85rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
+  text-transform: none;
 }
 
 .empty-slot-sub {
-  font-size: 0.62rem;
+  font-family: var(--font-small);
+  font-size: 0.75rem;
   color: var(--color-iron-light);
+  text-transform: none;
 }
 
 @media (max-width: 480px) {

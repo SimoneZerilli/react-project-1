@@ -9,6 +9,19 @@ interface VictoryScreenProps {
   onRestart: () => void;
 }
 
+const getLocalizedHandDisplayName = (handName: string, pokerHands: Record<string, string>): string => {
+  if (!handName || handName === 'Nessuna' || handName === 'None') return handName;
+  for (const [key, val] of Object.entries(pokerHands)) {
+    if (
+      key.replace(/_/g, ' ').toLowerCase() === handName.toLowerCase() ||
+      key.toLowerCase() === handName.toLowerCase()
+    ) {
+      return val;
+    }
+  }
+  return handName;
+};
+
 export const VictoryScreen: React.FC<VictoryScreenProps> = ({
   money,
   stats,
@@ -33,8 +46,8 @@ export const VictoryScreen: React.FC<VictoryScreenProps> = ({
         <span className="victory-tag">[ {t.victoryTitle} ]</span>
         <h2 className="victory-title">
           {language === 'en'
-            ? 'ALL 8 TAVERN ANTES HAVE BEEN CONQUERED'
-            : 'TUTTI GLI 8 ANTE DELLA TAVERNA SONO STATI CONQUISTATI'}
+            ? 'All 8 Tavern Antes Have Been Conquered'
+            : 'Tutti gli 8 Ante della Taverna sono stati conquistati'}
         </h2>
         <p className="victory-subtitle">{t.victoryDesc}</p>
 
@@ -83,7 +96,7 @@ export const VictoryScreen: React.FC<VictoryScreenProps> = ({
               {language === 'en' ? 'Highest Scoring Hand:' : 'Miglior Mano della Partita:'}
             </span>
             <span className="stat-number status-blood">
-              {stats.bestHandName} (+{stats.bestHandScore} PTS)
+              {getLocalizedHandDisplayName(stats.bestHandName, t.pokerHands)} (+{stats.bestHandScore} PTS)
             </span>
           </div>
         </div>

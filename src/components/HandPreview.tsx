@@ -22,7 +22,7 @@ export const HandPreview: React.FC<HandPreviewProps> = ({
       <aside className="hand-preview pixel-panel" aria-label={t.roundScoreLabel}>
         <div className="preview-empty">
           <span className="empty-title">
-            {language === 'en' ? '[ SELECT 1 TO 5 CARDS ]' : '[ SELEZIONA DA 1 A 5 CARTE ]'}
+            {language === 'en' ? '[ Select 1 to 5 Cards ]' : '[ Seleziona da 1 a 5 Carte ]'}
           </span>
           <span className="empty-sub">
             {language === 'en'
@@ -47,15 +47,15 @@ export const HandPreview: React.FC<HandPreviewProps> = ({
     >
       <div className="preview-header">
         <span className="preview-label">
-          {language === 'en' ? 'EVALUATED HAND' : 'COMBINAZIONE RILEVATA'}
+          {language === 'en' ? 'Evaluated Hand' : 'Combinazione Rilevata'}
         </span>
-        <h2 className="preview-hand-name">[ {localizedHandName.toUpperCase()} ]</h2>
+        <h2 className="preview-hand-name">[ {localizedHandName} ]</h2>
       </div>
 
       <div className="preview-stats">
         <div className="stat-box chips-box">
           <span className="stat-title">
-            {language === 'en' ? 'TOTAL CHIPS' : 'CHIPS TOTALI'}
+            {language === 'en' ? 'Total Chips' : 'Chips Totali'}
           </span>
           <span className="stat-val status-gold">{totalChips}</span>
           {previewBreakdown && previewBreakdown.jokerChips > 0 && (
@@ -69,7 +69,7 @@ export const HandPreview: React.FC<HandPreviewProps> = ({
 
         <div className="stat-box mult-box">
           <span className="stat-title">
-            {language === 'en' ? 'TOTAL MULT' : 'MULT TOTALE'}
+            {language === 'en' ? 'Total Mult' : 'Mult Totale'}
           </span>
           <span className="stat-val status-blood">{totalMult}</span>
           {previewBreakdown && previewBreakdown.jokerMult > 0 && (
@@ -83,7 +83,7 @@ export const HandPreview: React.FC<HandPreviewProps> = ({
 
         <div className="stat-box potential-box">
           <span className="stat-title">
-            {language === 'en' ? 'ESTIMATED SCORE' : 'STIMA PUNTEGGIO'}
+            {language === 'en' ? 'Estimated Score' : 'Stima Punteggio'}
           </span>
           <span className="stat-val status-gold">{totalScore} PTS</span>
         </div>
@@ -92,8 +92,8 @@ export const HandPreview: React.FC<HandPreviewProps> = ({
       <div className="preview-scoring-info">
         <span className="scoring-cards-count">
           {language === 'en'
-            ? `SCORING CARDS: ${evaluatedHand.scoringCards.length} / ${selectedCount}`
-            : `CARTE VALIDE AL PUNTEGGIO: ${evaluatedHand.scoringCards.length} / ${selectedCount}`}
+            ? `Scoring Cards: ${evaluatedHand.scoringCards.length} / ${selectedCount}`
+            : `Carte Valide al Punteggio: ${evaluatedHand.scoringCards.length} / ${selectedCount}`}
         </span>
         {previewBreakdown && previewBreakdown.triggeredJokers.length > 0 && (
           <div className="triggered-jokers-list">

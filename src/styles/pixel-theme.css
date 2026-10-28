@@ -49,14 +49,12 @@ body {
   outline-offset: var(--focus-offset) !important;
 }
 
-/* Tipografia: Titoli grandi in Jacquard con prima lettera maiuscola */
-h1, h2, h3, h4,
+/* Tipografia: Grandi insegne in Jacquard con prima lettera maiuscola */
+h1,
 .tavern-title,
-.outcome-title,
 .blind-select-title,
 .shop-title,
-.help-title,
-.receipt-title {
+.help-title {
   font-family: var(--font-title);
   text-transform: none;
   letter-spacing: 0.04em;
