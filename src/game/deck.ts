@@ -55,6 +55,13 @@ export function getSuitAbbreviation(suit: Suit): string {
 }
 
 /**
+ * Restituisce il percorso dell'immagine ritagliata dallo sprite sheet pixel medievale.
+ */
+export function getCardImagePath(card: PlayingCard): string {
+  return `/cards/${card.suit}-${card.rank}.png`;
+}
+
+/**
  * Calcola i chip base conferiti dalla carta in base al suo rango nominale:
  * - 2..10: valore nominale
  * - J, Q, K: 10 chip

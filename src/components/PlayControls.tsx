@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ScoreBreakdown } from '../game/scoring';
+import { useLanguage } from '../i18n/LanguageContext';
 import './PlayControls.css';
 
 interface PlayControlsProps {
@@ -21,11 +22,12 @@ export const PlayControls: React.FC<PlayControlsProps> = ({
   onPlayHand,
   onDiscard,
 }) => {
+  const { t, language } = useLanguage();
   const canPlay = selectedCount > 0 && handsRemaining > 0 && !isRoundOver;
   const canDiscard = selectedCount > 0 && discardsRemaining > 0 && !isRoundOver;
 
   return (
-    <div className="play-controls-container" aria-label="Controlli di Gioco">
+    <div className="play-controls-container" aria-label={t.commands}>
       {/* Resoconto Ultima Mano Giocata */}
       {lastPlayedBreakdown && (
         <div
@@ -33,11 +35,13 @@ export const PlayControls: React.FC<PlayControlsProps> = ({
           role="status"
           aria-live="polite"
         >
-          <span className="last-hand-tag">ULTIMA MANO GIOCATA:</span>
+          <span className="last-hand-tag">
+            {language === 'en' ? 'LAST PLAYED HAND:' : 'ULTIMA MANO GIOCATA:'}
+          </span>
           <span className="last-hand-details">
             <strong>{lastPlayedBreakdown.displayName}</strong> | (
-            {lastPlayedBreakdown.baseChips} Base + {lastPlayedBreakdown.cardChips} Carte) X{' '}
-            {lastPlayedBreakdown.totalMult} Mult ={' '}
+            {lastPlayedBreakdown.baseChips} Base + {lastPlayedBreakdown.cardChips}{' '}
+            {language === 'en' ? 'Cards' : 'Carte'}) X {lastPlayedBreakdown.totalMult} Mult ={' '}
             <span className="status-gold">+{lastPlayedBreakdown.finalScore} PTS</span>
           </span>
         </div>
@@ -50,9 +54,9 @@ export const PlayControls: React.FC<PlayControlsProps> = ({
           className="pixel-btn pixel-btn-blood play-btn"
           disabled={!canPlay}
           onClick={onPlayHand}
-          aria-label={`Gioca la mano selezionata con tasto Invio. Mani disponibili: ${handsRemaining}`}
+          aria-label={`${t.playHandBtn}. ${t.handsRemainingLabel}: ${handsRemaining}`}
         >
-          [ PLAY HAND (INVIO) ]
+          {t.playHandBtn}
         </button>
 
         <button
@@ -60,12 +64,11 @@ export const PlayControls: React.FC<PlayControlsProps> = ({
           className="pixel-btn discard-btn"
           disabled={!canDiscard}
           onClick={onDiscard}
-          aria-label={`Scarta le carte selezionate con tasto X. Scarti rimasti: ${discardsRemaining}`}
+          aria-label={`${t.discardBtn}. ${t.discardsRemainingLabel}: ${discardsRemaining}`}
         >
-          [ DISCARD (X) ]
+          {t.discardBtn}
         </button>
       </div>
     </div>
   );
 };
-

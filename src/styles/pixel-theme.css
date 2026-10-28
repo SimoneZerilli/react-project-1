@@ -23,8 +23,9 @@
 body {
   background-color: var(--bg-tavern);
   background-image: 
-    radial-gradient(ellipse at top center, rgba(110, 10, 10, 0.25) 0%, transparent 60%),
-    linear-gradient(180deg, #120909 0%, var(--bg-tavern) 100%);
+    radial-gradient(ellipse at top center, rgba(140, 10, 10, 0.3) 0%, transparent 65%),
+    radial-gradient(ellipse at bottom center, rgba(30, 15, 10, 0.5) 0%, transparent 70%),
+    linear-gradient(180deg, #100808 0%, var(--bg-tavern) 100%);
   color: var(--text-primary);
   font-family: var(--font-pixel);
   min-height: 100vh;
@@ -40,10 +41,10 @@ body {
   outline-offset: var(--focus-offset) !important;
 }
 
-/* Pulsanti Pixel Medievali Insanguinati */
+/* Pulsanti Pixel Medievali ad Alto Dettaglio */
 .pixel-btn {
   font-family: var(--font-pixel);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -53,7 +54,7 @@ body {
   border: none;
   cursor: pointer;
   box-shadow: var(--pixel-border-iron);
-  transition: transform 0.05s ease, background-color 0.1s ease;
+  transition: transform 0.08s ease, background-color 0.1s ease;
   position: relative;
   user-select: none;
 }
@@ -79,11 +80,11 @@ body {
   color: #fff;
 }
 
-/* Riquadro Taverna con Bordo Ruggine e Sangue */
+/* Riquadri Taverna */
 .pixel-panel {
   background-color: var(--bg-surface);
   box-shadow: var(--pixel-border-iron);
-  padding: 18px;
+  padding: 16px;
   position: relative;
 }
 
@@ -93,7 +94,7 @@ body {
   border-top: 2px solid var(--color-blood-fresh);
 }
 
-/* Effetto gocce di sangue pixelate in testa ai pannelli */
+/* Bordo di gocciolamento di sangue ad alta risoluzione */
 .blood-drip-edge {
   position: relative;
 }
@@ -104,14 +105,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   background: repeating-linear-gradient(
     90deg,
     var(--color-blood-fresh) 0px,
-    var(--color-blood-fresh) 8px,
-    var(--color-blood-dark) 8px,
-    var(--color-blood-dark) 16px,
-    transparent 16px,
-    transparent 24px
+    var(--color-blood-fresh) 6px,
+    var(--color-blood-dark) 6px,
+    var(--color-blood-dark) 12px,
+    transparent 12px,
+    transparent 18px
   );
 }

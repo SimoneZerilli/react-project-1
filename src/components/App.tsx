@@ -30,6 +30,7 @@ import { JokerSlots } from './JokerSlots';
 import { ShopView } from './ShopView';
 import { VictoryScreen } from './VictoryScreen';
 import { HelpDialog } from './HelpDialog';
+import { useLanguage } from '../i18n/LanguageContext';
 import '../styles/pixel-theme.css';
 import './App.css';
 
@@ -44,6 +45,7 @@ interface RoundEarnedSummary {
 }
 
 export const App: React.FC = () => {
+  const { t, language, toggleLanguage } = useLanguage();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
 
@@ -65,8 +67,8 @@ export const App: React.FC = () => {
   // Livelli permanenti delle combinazioni di poker
   const [handLevels, setHandLevels] = useState<Record<HandType, HandLevelInfo>>(createInitialHandLevels);
 
-  // Equipaggiamento Jolly
-  const [equippedJokers, setEquippedJokers] = useState<Joker[]>([JOKERS_ROSTER.court_jester]);
+  // Equipaggiamento Jolly (inizia con 0 Jolly, 5 slot vuoti)
+  const [equippedJokers, setEquippedJokers] = useState<Joker[]>([]);
 
   // Negozio tra i blind
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -131,7 +133,7 @@ export const App: React.FC = () => {
     }
 
     const stateToSave: SavedRunState = {
-      version: 1,
+      version: 2,
       ante,
       phase,
       activeBlindType,
@@ -210,15 +212,7 @@ export const App: React.FC = () => {
     });
   }, [selectedCards.length, evaluatedHand, isCardDebuffed, equippedJokers, discardsUsedThisRound, handsRemaining, money]);
 
-  // Gestione equipaggiamento / vendita Jolly
-  const handleEquipJoker = useCallback((joker: Joker) => {
-    setEquippedJokers((prev) => {
-      if (prev.length >= 5 || prev.some((j) => j.id === joker.id)) return prev;
-      return [...prev, joker];
-    });
-    setAnnouncement(`Jolly equipaggiato: ${joker.name}.`);
-  }, []);
-
+  // Gestione vendita Jolly
   const handleSellJoker = useCallback((jokerId: string) => {
     const targetJoker = equippedJokers.find((j) => j.id === jokerId);
     if (!targetJoker) return;
@@ -543,6 +537,8 @@ export const App: React.FC = () => {
 
   // Uscita dal Negozio verso il prossimo Blind
   const handleLeaveShop = useCallback(() => {
+    setShopItems([]);
+    setRerollCost(5);
     if (activeBlindType === 'small') {
       setActiveBlindType('big');
       setPhase('select_blind');
@@ -565,7 +561,9 @@ export const App: React.FC = () => {
     setActiveBlindType('small');
     setMoney(4);
     setHandLevels(createInitialHandLevels());
-    setEquippedJokers([JOKERS_ROSTER.court_jester]);
+    setEquippedJokers([]);
+    setShopItems([]);
+    setRerollCost(5);
     setRunStats(createInitialRunStats());
     setPendingBonusDiscards(0);
     setPendingBonusHands(0);
@@ -648,58 +646,72 @@ export const App: React.FC = () => {
       {/* Intestazione */}
       <header className="tavern-header pixel-panel pixel-panel-blood blood-drip-edge" role="banner">
         <div className="tavern-title-group">
-          <div className="tavern-crest">[ ROGUELIKE POKER MEDIEVALE ]</div>
-          <h1 className="tavern-title">BALCARD</h1>
+          <div className="tavern-crest">[ {t.appSubtitle} ]</div>
+          <h1 className="tavern-title">{t.appTitle}</h1>
         </div>
 
-        <nav className="header-controls-group" aria-label="Controlli Rapidi">
+        <nav className="header-controls-group" aria-label="Controls">
+          <button
+            type="button"
+            className="pixel-btn btn-lang-switch"
+            onClick={toggleLanguage}
+            aria-label={`Current language: ${language.toUpperCase()}. Click to switch language.`}
+          >
+            [ {t.langSwitch} ]
+          </button>
           <button
             type="button"
             className="pixel-btn btn-abandon-run"
             onClick={handleRestartRun}
-            aria-label="Abbandona la partita attuale e riparti da zero"
+            aria-label={t.restart}
           >
-            [ REIMPOSTA RUN ]
+            [ {t.restart} ]
           </button>
           <button
             type="button"
             className="pixel-btn pixel-btn-blood"
             onClick={() => setIsHelpOpen(true)}
-            aria-label="Apri registro comandi con tasto punto di domanda"
+            aria-label={t.help}
           >
-            [?] COMANDI
+            {t.help}
           </button>
         </nav>
       </header>
 
       {/* Barra Risorse e Stato Globale */}
-      <section className="tavern-status-bar pixel-panel" aria-label="Stato Partita">
+      <section className="tavern-status-bar pixel-panel" aria-label="Game Status">
         <div className="status-item">
-          <span className="status-label">ANTE</span>
+          <span className="status-label">{t.ante}</span>
           <span className="status-value status-gold">{ante} / 8</span>
         </div>
         <div className="status-item">
           <span className="status-label">BLIND</span>
-          <span className="status-value">{currentBlind.title}</span>
+          <span className="status-value">
+            {currentBlind.type === 'small'
+              ? t.smallBlindTitle
+              : currentBlind.type === 'big'
+              ? t.bigBlindTitle
+              : t.bossBlindTitle}
+          </span>
         </div>
         <div className="status-item">
-          <span className="status-label">PUNTI / TARGET</span>
+          <span className="status-label">{t.score} / {t.target}</span>
           <span className="status-value status-blood">
             {score} / {currentBlind.scoreTarget} PTS ({scoreProgressPercent}%)
           </span>
         </div>
         <div className="status-item">
-          <span className="status-label">ORO</span>
+          <span className="status-label">{t.gold}</span>
           <span className="status-value status-gold">${money}</span>
         </div>
         <div className="status-item">
-          <span className="status-label">HANDS</span>
+          <span className="status-label">{t.hands}</span>
           <span className={`status-value ${handsRemaining <= 1 ? 'status-blood' : ''}`}>
             {phase === 'in_blind' ? handsRemaining : 4 + pendingBonusHands}
           </span>
         </div>
         <div className="status-item">
-          <span className="status-label">DISCARDS</span>
+          <span className="status-label">{t.discards}</span>
           <span className="status-value">
             {phase === 'in_blind' ? discardsRemaining : 4 + pendingBonusDiscards}
           </span>
@@ -710,7 +722,6 @@ export const App: React.FC = () => {
       <JokerSlots
         equippedJokers={equippedJokers}
         onSellJoker={handleSellJoker}
-        onEquipJoker={handleEquipJoker}
       />
 
       {/* Barra Progresso Punteggio */}
@@ -744,21 +755,23 @@ export const App: React.FC = () => {
       {phase === 'in_blind' && (
         <main className="tavern-table pixel-panel pixel-panel-blood" id="main-content">
           {currentBlind.type === 'boss' && currentBlind.bossRule && (
-            <aside className="boss-warning-panel pixel-panel" aria-label="Regola del Boss Attiva">
-              <span className="boss-warning-title">[ ATTENZIONE: REGOLA DEL BOSS ATTIVA ]</span>
+            <aside className="boss-warning-panel pixel-panel" aria-label={t.activeBoss}>
+              <span className="boss-warning-title">
+                [ {t.activeBoss}: {(t.bossRules[currentBlind.bossRule.id]?.name ?? currentBlind.bossRule.name).toUpperCase()} ]
+              </span>
               <p className="boss-warning-text">
-                <strong>{currentBlind.bossRule.name}</strong>: {currentBlind.bossRule.description}
+                {t.bossRules[currentBlind.bossRule.id]?.description ?? currentBlind.bossRule.description}
               </p>
             </aside>
           )}
 
           <div className="table-controls">
             <div className="selection-counter">
-              <span>CARTE SELEZIONATE: </span>
+              <span>{t.selectedCardsCount}: </span>
               <span className="counter-number status-gold">{selectedCardIds.length} / 5</span>
             </div>
             <div className="deck-counter">
-              <span>MAZZO: {deck.length} CARTE</span>
+              <span>{language === 'en' ? `DECK: ${deck.length} CARDS` : `MAZZO: ${deck.length} CARTE`}</span>
             </div>
           </div>
 
@@ -771,7 +784,7 @@ export const App: React.FC = () => {
           <section
             className="hand-container"
             role="group"
-            aria-label={`Mano di ${hand.length} carte`}
+            aria-label={`${t.handsRemainingLabel}: ${hand.length}`}
             onKeyDown={handleHandKeyDown}
           >
             {hand.map((card, index) => {
@@ -808,35 +821,37 @@ export const App: React.FC = () => {
 
       {/* FASE 3: VITTORIA DEL ROUND CON RESOCONTO ECONOMICO */}
       {phase === 'round_won' && roundEarnings && (
-        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Vittoria Blind">
+        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.roundWonBanner}>
           <div className="outcome-banner banner-won pixel-panel">
-            <h2 className="outcome-title">[ OBIETTIVO RAGGIUNTO! BLIND SUPERATO ]</h2>
+            <h2 className="outcome-title">[ {t.blindConqueredTitle} ]</h2>
             <p className="outcome-desc">
-              Punteggio ottenuto: <strong>{score}</strong> su <strong>{currentBlind.scoreTarget}</strong>.
+              {language === 'en'
+                ? `Score achieved: ${score} / ${currentBlind.scoreTarget} PTS.`
+                : `Punteggio ottenuto: ${score} su ${currentBlind.scoreTarget}.`}
             </p>
 
             <div className="economic-receipt pixel-panel">
-              <span className="receipt-title">[ RESOCONTO BOTTINO DELLA TAVERNA ]</span>
+              <span className="receipt-title">[ {language === 'en' ? 'TAVERN BOUNTY RECEIPT' : 'RESOCONTO BOTTINO DELLA TAVERNA'} ]</span>
               <div className="receipt-row">
-                <span>Taglia Base del Blind:</span>
+                <span>{t.blindRewardLabel}</span>
                 <span className="status-gold">+${roundEarnings.blindReward}</span>
               </div>
               <div className="receipt-row">
-                <span>Mani Inutilizzate Avanzate:</span>
+                <span>{t.handsBonusLabel}</span>
                 <span className="status-gold">+${roundEarnings.handsBonus}</span>
               </div>
               <div className="receipt-row">
-                <span>Interesse Taverna ($1 ogni $5):</span>
+                <span>{t.interestBonusLabel}</span>
                 <span className="status-gold">+${roundEarnings.interestBonus}</span>
               </div>
               {roundEarnings.usuryBonus > 0 && (
                 <div className="receipt-row">
-                  <span>Bonus Usuraio di Borgo:</span>
+                  <span>{t.usuryBonusLabel}</span>
                   <span className="status-gold">+${roundEarnings.usuryBonus}</span>
                 </div>
               )}
               <div className="receipt-row total-row">
-                <span>Totale Incassato nel Forziere:</span>
+                <span>{t.totalEarnedLabel}</span>
                 <span className="status-gold">+${roundEarnings.total}</span>
               </div>
             </div>
@@ -845,9 +860,9 @@ export const App: React.FC = () => {
               type="button"
               className="pixel-btn pixel-btn-blood btn-continue-win"
               onClick={handleGoToShop}
-              aria-label="Entra nella bottega della taverna con tasto Invio"
+              aria-label={t.goToShopBtn}
             >
-              [ ENTRA NELLA BOTTEGA DELLA TAVERNA (INVIO) ]
+              {t.goToShopBtn}
             </button>
           </div>
         </section>
@@ -870,30 +885,29 @@ export const App: React.FC = () => {
 
       {/* FASE 5: SCONFITTA (GAME OVER) CON STATISTICHE */}
       {phase === 'game_over' && (
-        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label="Game Over">
+        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.gameOverTitle}>
           <div className="outcome-banner banner-lost pixel-panel">
-            <h2 className="outcome-title">[ SCONFITTA NELLA TAVERNA ]</h2>
+            <h2 className="outcome-title">[ {t.gameOverTitle} ]</h2>
             <p className="outcome-desc">
-              Le mani sono esaurite e il tributo di {currentBlind.scoreTarget} punti non è stato pagato.
-              La tua corsa si arresta all&apos;Ante {ante}.
+              {t.gameOverDesc}
             </p>
 
             <div className="economic-receipt pixel-panel">
-              <span className="receipt-title">[ CRONACHE DELLA RUN INTERROTTA ]</span>
+              <span className="receipt-title">[ {t.runStatsTitle} ]</span>
               <div className="receipt-row">
-                <span>Mani Giocate:</span>
+                <span>{t.statsHandsPlayed}</span>
                 <span className="status-gold">{runStats.handsPlayed}</span>
               </div>
               <div className="receipt-row">
-                <span>Blind Conquistati:</span>
+                <span>{language === 'en' ? 'Blinds Conquered:' : 'Blind Conquistati:'}</span>
                 <span className="status-gold">{runStats.blindsWon}</span>
               </div>
               <div className="receipt-row">
-                <span>Oro Totale Accumulato:</span>
+                <span>{t.statsGoldEarned}</span>
                 <span className="status-gold">${runStats.totalGoldEarned}</span>
               </div>
               <div className="receipt-row">
-                <span>Miglior Mano:</span>
+                <span>{language === 'en' ? 'Highest Hand:' : 'Miglior Mano:'}</span>
                 <span className="status-blood">{runStats.bestHandName} (+{runStats.bestHandScore} PTS)</span>
               </div>
             </div>
@@ -902,9 +916,9 @@ export const App: React.FC = () => {
               type="button"
               className="pixel-btn pixel-btn-blood"
               onClick={handleRestartRun}
-              aria-label="Ricomincia la run dall'Ante 1 con tasto Invio"
+              aria-label={t.newRunBtn}
             >
-              [ RICOMINCIA LA RUN DALL&apos;ANTE 1 (INVIO) ]
+              {t.newRunBtn}
             </button>
           </div>
         </section>
@@ -922,7 +936,9 @@ export const App: React.FC = () => {
       {/* Footer */}
       <footer className="tavern-footer">
         <p>
-          Navigazione totale da tastiera. Premi <kbd className="pixel-key">?</kbd> per visualizzare le scorciatoie.
+          {language === 'en'
+            ? 'Complete keyboard navigation. Press ? to show command shortcuts.'
+            : 'Navigazione totale da tastiera. Premi ? per visualizzare le scorciatoie.'}
         </p>
       </footer>
 

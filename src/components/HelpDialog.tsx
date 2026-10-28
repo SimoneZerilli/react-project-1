@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 import './HelpDialog.css';
 
 interface HelpDialogProps {
@@ -7,6 +8,7 @@ interface HelpDialogProps {
 }
 
 export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
+  const { t, language } = useLanguage();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -71,63 +73,91 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
       >
         <div className="help-dialog-header">
           <h2 id="help-title" className="help-title">
-            [ ARCHIVIO DEI COMANDI ]
+            {language === 'en' ? '[ COMMAND ARCHIVE ]' : '[ ARCHIVIO DEI COMANDI ]'}
           </h2>
           <button
             ref={closeButtonRef}
             className="pixel-btn pixel-btn-blood"
             onClick={onClose}
-            aria-label="Chiudi finestra dei comandi con tasto Escape"
+            aria-label={t.close}
           >
-            [X] CHIUDI [ESC]
+            {t.close}
           </button>
         </div>
 
         <p className="help-description">
-          Balcard è interamente navigabile e giocabile da tastiera senza ricorrere al mouse:
+          {language === 'en'
+            ? 'Balcard is fully playable and accessible using keyboard only:'
+            : 'Balcard è interamente navigabile e giocabile da tastiera senza ricorrere al mouse:'}
         </p>
 
-        <table className="help-table" aria-label="Tabella comandi da tastiera">
+        <table className="help-table" aria-label={t.commands}>
           <thead>
             <tr>
-              <th scope="col">Tasto</th>
-              <th scope="col">Azione</th>
+              <th scope="col">{language === 'en' ? 'Key' : 'Tasto'}</th>
+              <th scope="col">{language === 'en' ? 'Action' : 'Azione'}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><kbd className="pixel-key">&lt;-</kbd> <kbd className="pixel-key">-&gt;</kbd></td>
-              <td>Scorri il focus tra le carte in mano</td>
+              <td>
+                {language === 'en'
+                  ? 'Move card focus horizontally in hand'
+                  : 'Scorri il focus tra le carte in mano'}
+              </td>
             </tr>
             <tr>
-              <td><kbd className="pixel-key">Spazio</kbd></td>
-              <td>Seleziona o deseleziona la carta (fino a 5 carte)</td>
+              <td><kbd className="pixel-key">{language === 'en' ? 'Space' : 'Spazio'}</kbd></td>
+              <td>
+                {language === 'en'
+                  ? 'Select or deselect focused card (up to 5)'
+                  : 'Seleziona o deseleziona la carta (fino a 5 carte)'}
+              </td>
             </tr>
             <tr>
-              <td><kbd className="pixel-key">Invio</kbd></td>
-              <td><strong>Play Hand</strong>: Gioca le carte selezionate</td>
+              <td><kbd className="pixel-key">{language === 'en' ? 'Enter' : 'Invio'}</kbd></td>
+              <td>
+                <strong>Play Hand</strong>:{' '}
+                {language === 'en' ? 'Score selected cards' : 'Gioca le carte selezionate'}
+              </td>
             </tr>
             <tr>
               <td><kbd className="pixel-key">X</kbd></td>
-              <td><strong>Discard</strong>: Scarta le carte selezionate</td>
+              <td>
+                <strong>Discard</strong>:{' '}
+                {language === 'en' ? 'Discard selected cards' : 'Scarta le carte selezionate'}
+              </td>
             </tr>
             <tr>
               <td><kbd className="pixel-key">Tab</kbd> / <kbd className="pixel-key">Shift+Tab</kbd></td>
-              <td>Sposta il focus tra le aree (Mano, Jokers, Negozio)</td>
+              <td>
+                {language === 'en'
+                  ? 'Move focus between zones (Hand, Jokers, Shop)'
+                  : 'Sposta il focus tra le aree (Mano, Jokers, Negozio)'}
+              </td>
             </tr>
             <tr>
               <td><kbd className="pixel-key">?</kbd></td>
-              <td>Apri questo registro dei comandi</td>
+              <td>
+                {language === 'en' ? 'Open this help register' : 'Apri questo registro dei comandi'}
+              </td>
             </tr>
             <tr>
               <td><kbd className="pixel-key">Esc</kbd></td>
-              <td>Chiudi pannelli e finestre modali</td>
+              <td>
+                {language === 'en' ? 'Close dialogs and modals' : 'Chiudi pannelli e finestre modali'}
+              </td>
             </tr>
           </tbody>
         </table>
 
         <div className="help-dialog-footer">
-          <span className="help-tip">Regola: Il focus non viene mai perso e rimane sempre visibile.</span>
+          <span className="help-tip">
+            {language === 'en'
+              ? 'Rule: Keyboard focus is never lost and always clearly visible.'
+              : 'Regola: Il focus non viene mai perso e rimane sempre visibile.'}
+          </span>
         </div>
       </div>
     </div>

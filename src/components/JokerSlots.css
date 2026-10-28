@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px;
+  padding: 12px 14px;
 }
 
 .joker-slots-header {
@@ -35,9 +35,10 @@
   letter-spacing: 0.05em;
 }
 
-.btn-add-test-joker {
-  font-size: 0.8rem;
-  padding: 6px 12px;
+.joker-slots-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .slots-row {
@@ -48,8 +49,8 @@
 }
 
 .empty-joker-slot {
-  width: 130px;
-  min-height: 150px;
+  width: 136px;
+  min-height: 220px;
   border: 2px dashed var(--color-iron);
   background-color: rgba(15, 12, 10, 0.4);
   display: flex;
@@ -62,49 +63,12 @@
 }
 
 .empty-slot-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
 }
 
 .empty-slot-sub {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--color-iron-light);
 }
-
-.joker-picker-drawer {
-  background-color: var(--bg-surface);
-  border: 2px solid var(--color-gold);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.picker-header h4 {
-  font-size: 0.85rem;
-  color: var(--color-gold-bright);
-  letter-spacing: 0.08em;
-  text-align: center;
-}
-
-.picker-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  justify-content: center;
-}
-
-.picker-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
-}
-
-.btn-picker-select {
-  width: 100%;
-  font-size: 0.75rem;
-  padding: 6px;
-}
-

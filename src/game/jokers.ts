@@ -8,6 +8,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'common',
     cost: 4,
     sellValue: 2,
+    imagePath: '/jokers/court_jester.png',
     onHandScoring: () => ({
       addMult: 4,
       message: '+4 Mult dal Giullare',
@@ -21,6 +22,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'rare',
     cost: 6,
     sellValue: 3,
+    imagePath: '/jokers/alchemist.png',
     onHandScoring: (ctx) => {
       const diamondCount = ctx.evaluatedHand.scoringCards.filter((c) => c.suit === 'diamonds').length;
       if (diamondCount > 0) {
@@ -41,6 +43,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'common',
     cost: 5,
     sellValue: 2,
+    imagePath: '/jokers/royal_blacksmith.png',
     onHandScoring: (ctx) => {
       const spadeCount = ctx.evaluatedHand.scoringCards.filter((c) => c.suit === 'spades').length;
       if (spadeCount > 0) {
@@ -60,6 +63,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'common',
     cost: 5,
     sellValue: 2,
+    imagePath: '/jokers/monk_scribe.png',
     onHandScoring: (ctx) => {
       if (ctx.evaluatedHand.type === 'straight' || ctx.evaluatedHand.type === 'straight_flush') {
         return {
@@ -78,6 +82,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'common',
     cost: 4,
     sellValue: 2,
+    imagePath: '/jokers/marksman_crossbow.png',
     onHandScoring: (ctx) => {
       if (ctx.evaluatedHand.type === 'pair' || ctx.evaluatedHand.type === 'two_pair') {
         return {
@@ -96,6 +101,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'rare',
     cost: 7,
     sellValue: 3,
+    imagePath: '/jokers/knight_errant.png',
     onHandScoring: (ctx) => {
       if (ctx.discardsUsedThisRound === 0) {
         return {
@@ -114,6 +120,7 @@ export const JOKERS_ROSTER: Record<string, Joker> = {
     rarity: 'rare',
     cost: 6,
     sellValue: 3,
+    imagePath: '/jokers/village_usurer.png',
     onBlindWon: (ctx) => {
       if (ctx.handsRemaining > 0) {
         const bonus = ctx.handsRemaining * 2;

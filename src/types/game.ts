@@ -108,6 +108,7 @@ export interface Joker {
   rarity: JokerRarity;
   cost: number;
   sellValue: number;
+  imagePath?: string;
   onHandScoring?: (ctx: JokerScoringContext) => JokerScoringResult | null;
   onBlindWon?: (ctx: JokerBlindWonContext) => { addMoney?: number; message?: string } | null;
 }

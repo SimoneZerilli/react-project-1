@@ -1,7 +1,7 @@
 .pixel-card {
-  width: 96px;
-  height: 144px;
-  background-color: var(--bg-surface-elevated);
+  width: 90px;
+  height: 138px;
+  background-color: #2b231c;
   border: 2px solid var(--color-iron-light);
   box-shadow: 
     0 -2px 0 0 var(--color-iron-light),
@@ -10,31 +10,30 @@
     2px 0 0 0 var(--color-iron-dark),
     0 0 0 2px #000;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 8px 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
   cursor: pointer;
   user-select: none;
   position: relative;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.4, 1), box-shadow 0.12s ease;
   font-family: var(--font-pixel);
+  border-radius: 2px;
 }
 
 .pixel-card:hover {
-  background-color: var(--bg-parchment-stained);
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
 .pixel-card.is-selected {
-  transform: translateY(-16px);
-  background-color: var(--bg-parchment-stained);
+  transform: translateY(-18px);
   border-color: var(--color-blood-bright);
   box-shadow: 
     0 -3px 0 0 var(--color-blood-bright),
     0 3px 0 0 var(--color-blood-dark),
     -3px 0 0 0 var(--color-blood-bright),
     3px 0 0 0 var(--color-blood-dark),
-    0 0 8px rgba(230, 25, 25, 0.6),
+    0 0 12px rgba(230, 25, 25, 0.75),
     0 0 0 2px #000;
 }
 
@@ -44,93 +43,45 @@
   z-index: 10;
 }
 
-.card-top,
-.card-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  font-weight: bold;
+.card-sprite-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
 }
 
-.card-bottom {
-  flex-direction: row-reverse;
-}
-
-.card-rank {
-  font-size: 1rem;
-}
-
-.card-suit-badge {
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  opacity: 0.85;
-}
-
-.card-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.card-center-rank {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-shadow: 2px 2px 0 #000;
-  line-height: 1;
-}
-
-.card-suit-name {
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  opacity: 0.8;
-  text-transform: uppercase;
-}
-
-.card-chips {
-  font-size: 0.7rem;
+.card-chips-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background-color: rgba(12, 10, 8, 0.88);
+  border: 1px solid var(--color-gold);
   color: var(--color-gold-bright);
+  font-size: 0.68rem;
   font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1.1;
+  pointer-events: none;
 }
 
 .scoring-indicator {
-  font-size: 0.8rem;
-  color: var(--color-gold-bright);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(60, 10, 10, 0.9);
+  border: 1px solid var(--color-blood-bright);
+  color: #fff;
+  font-size: 0.75rem;
   font-weight: bold;
+  padding: 1px 4px;
+  line-height: 1.1;
+  pointer-events: none;
+  box-shadow: 0 0 6px var(--color-blood-bright);
 }
 
 .pixel-card.is-scoring {
   border-color: var(--color-gold-bright);
 }
-
-/* Semi Colori */
-.suit-hearts {
-  color: #ff4d5a;
-}
-.suit-hearts.is-selected {
-  background: linear-gradient(180deg, #380d12 0%, #1f0b0d 100%);
-}
-
-.suit-diamonds {
-  color: #ff8533;
-}
-.suit-diamonds.is-selected {
-  background: linear-gradient(180deg, #3d1c0e 0%, #21110a 100%);
-}
-
-.suit-clubs {
-  color: #52b788;
-}
-.suit-clubs.is-selected {
-  background: linear-gradient(180deg, #0e291b 0%, #0a1711 100%);
-}
-
-.suit-spades {
-  color: #a2b2c8;
-}
-.suit-spades.is-selected {
-  background: linear-gradient(180deg, #182230 0%, #0e141d 100%);
-}
-

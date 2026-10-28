@@ -1,5 +1,6 @@
 import React from 'react';
-import type { HandLevelInfo, HandType, ShopItem } from '../types/game';
+import type { HandLevelInfo, HandType, Joker, ShopItem } from '../types/game';
+import { useLanguage } from '../i18n/LanguageContext';
 import './ShopView.css';
 
 interface ShopViewProps {
@@ -25,39 +26,51 @@ export const ShopView: React.FC<ShopViewProps> = ({
   onReroll,
   onLeaveShop,
 }) => {
+  const { t } = useLanguage();
   const canReroll = money >= rerollCost;
   const canEquipMoreJokers = equippedJokersCount < maxJokerSlots;
 
   return (
-    <section className="shop-screen pixel-panel pixel-panel-blood" role="region" aria-label="Negozio della Taverna">
+    <section className="shop-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.shopTitle}>
       <div className="shop-header">
         <div className="shop-title-group">
-          <span className="shop-crest">[ MERCANTE DELLA TAVERNA ]</span>
-          <h2 className="shop-title">LA BOTTEGA DEI RELITTI</h2>
-          <p className="shop-subtitle">
-            Spendi il tuo oro per acquistare nuovi Jolly o pergamene di potenziamento permanente.
-          </p>
+          <span className="shop-crest">{t.shopMerchantTitle}</span>
+          <h2 className="shop-title">{t.shopTitle}</h2>
+          <p className="shop-subtitle">{t.shopSubtitle}</p>
         </div>
 
         <div className="shop-gold-display">
-          <span className="gold-label">ORO DISPONIBILE:</span>
+          <span className="gold-label">{t.availableGoldLabel}</span>
           <span className="gold-val status-gold">${money}</span>
         </div>
       </div>
 
       {/* Griglia Articoli in Vendita */}
-      <div className="shop-items-grid" role="list" aria-label="Articoli in vendita">
+      <div className="shop-items-grid" role="list" aria-label={t.shopTitle}>
         {items.map((item) => {
           const isJoker = item.type === 'joker';
+          const jokerPayload = isJoker ? (item.payload as Joker) : null;
           const canAfford = money >= item.cost;
           const isBlocked = isJoker && !canEquipMoreJokers;
           const canBuy = canAfford && !isBlocked;
 
+          let displayName = item.name;
+          let displayDesc = item.description;
           let upgradeDetails = '';
-          if (!isJoker) {
+
+          if (isJoker && jokerPayload) {
+            const loc = t.jokers[jokerPayload.id];
+            if (loc) {
+              displayName = loc.name;
+              displayDesc = loc.description;
+            }
+          } else {
             const hType = (item.payload as { handType: HandType }).handType;
             const currentInfo = handLevels[hType];
-            upgradeDetails = `Livello Attuale: ${currentInfo.level} (${currentInfo.baseChips} Chips X ${currentInfo.baseMult} Mult)`;
+            const handName = t.pokerHands[hType] ?? hType;
+            displayName = `${t.scrollPrefix} ${handName}`;
+            displayDesc = `${t.scrollDescription} ${handName} (+${currentInfo.chipPerLevel} Chips, +${currentInfo.multPerLevel} Mult).`;
+            upgradeDetails = `${t.currentLevelInfo}: ${currentInfo.level} (${currentInfo.baseChips} Chips X ${currentInfo.baseMult} Mult)`;
           }
 
           return (
@@ -67,13 +80,24 @@ export const ShopView: React.FC<ShopViewProps> = ({
               role="listitem"
             >
               <div className="item-header">
-                <span className="item-badge">[{isJoker ? 'JOLLY' : 'PERGAMENA'}]</span>
+                <span className="item-badge">[{isJoker ? t.badgeJoker : t.badgeScroll}]</span>
                 <span className="item-cost status-gold">${item.cost}</span>
               </div>
 
+              {isJoker && jokerPayload?.imagePath && (
+                <div className="shop-item-art-frame">
+                  <img
+                    src={jokerPayload.imagePath}
+                    alt={displayName}
+                    className="shop-item-art-img"
+                    draggable={false}
+                  />
+                </div>
+              )}
+
               <div className="item-body">
-                <h3 className="item-name">{item.name}</h3>
-                <p className="item-desc">{item.description}</p>
+                <h3 className="item-name">{displayName}</h3>
+                <p className="item-desc">{displayDesc}</p>
                 {upgradeDetails && <span className="item-level-info">{upgradeDetails}</span>}
               </div>
 
@@ -83,13 +107,13 @@ export const ShopView: React.FC<ShopViewProps> = ({
                   className="pixel-btn pixel-btn-blood btn-buy"
                   disabled={!canBuy}
                   onClick={() => onBuyItem(item)}
-                  aria-label={`Acquista ${item.name} per $${item.cost} d'oro`}
+                  aria-label={`${t.buyBtn} ${displayName}`}
                 >
                   {isBlocked
-                    ? '[ SLOTS PIENI ]'
+                    ? t.slotsFullBtn
                     : canAfford
-                    ? `[ ACQUISTA ($${item.cost}) ]`
-                    : `[ ORO INSUFFICIENTE ($${item.cost}) ]`}
+                    ? `${t.buyBtn}${item.cost}) ]`
+                    : `${t.insufficientGoldBtn}${item.cost}) ]`}
                 </button>
               </div>
             </article>
@@ -104,18 +128,18 @@ export const ShopView: React.FC<ShopViewProps> = ({
           className="pixel-btn btn-reroll"
           disabled={!canReroll}
           onClick={onReroll}
-          aria-label={`Rinfresca le merci del negozio per $${rerollCost} d'oro`}
+          aria-label={`${t.rerollBtn}${rerollCost}`}
         >
-          [ REROLL OFFERTE: ${rerollCost} ]
+          {`${t.rerollBtn}${rerollCost}) ]`}
         </button>
 
         <button
           type="button"
           className="pixel-btn pixel-btn-blood btn-leave-shop"
           onClick={onLeaveShop}
-          aria-label="Esci dalla bottega e procedi al prossimo Blind"
+          aria-label={t.leaveShopBtn}
         >
-          [ ESCI DALLA BOTTEGA (PROSSIMO BLIND) ]
+          {t.leaveShopBtn}
         </button>
       </div>
     </section>

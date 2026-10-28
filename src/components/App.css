@@ -45,6 +45,19 @@
   flex-wrap: wrap;
 }
 
+.btn-lang-switch {
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  background-color: var(--bg-surface-elevated);
+  color: var(--color-gold-bright);
+  border-color: var(--color-gold);
+}
+
+.btn-lang-switch:hover {
+  background-color: var(--color-gold-shadow);
+  color: #fff;
+}
+
 .btn-abandon-run {
   font-size: 0.8rem;
   padding: 8px 12px;

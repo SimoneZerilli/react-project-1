@@ -7,7 +7,7 @@ import type {
 import type { RunStatistics } from './runStats';
 import { JOKERS_ROSTER } from './jokers';
 
-export const STORAGE_KEY = 'balcard_active_run_v1';
+export const STORAGE_KEY = 'balcard_active_run_v2';
 
 export interface SavedRunState {
   version: number;
@@ -50,11 +50,14 @@ export function saveRunState(state: SavedRunState): boolean {
  */
 export function loadRunState(): SavedRunState | null {
   try {
+    // Rimuove vecchie versioni obsolete se presenti
+    localStorage.removeItem('balcard_active_run_v1');
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as SavedRunState;
-    if (!parsed || parsed.version !== 1 || !parsed.ante || !parsed.handLevels) {
+    if (!parsed || parsed.version !== 2 || !parsed.ante || !parsed.handLevels) {
       return null;
     }
 
@@ -74,6 +77,7 @@ export function loadRunState(): SavedRunState | null {
 export function clearRunState(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('balcard_active_run_v1');
   } catch {
     // Ignora errori di storage non disponibile
   }

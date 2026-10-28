@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Blind } from '../types/game';
+import { useLanguage } from '../i18n/LanguageContext';
 import './BlindSelect.css';
 
 interface BlindSelectProps {
@@ -21,6 +22,7 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
   onPlayBlind,
   onSkipBlind,
 }) => {
+  const { t } = useLanguage();
   const blinds = [smallBlind, bigBlind, bossBlind];
 
   const getStatus = (blind: Blind) => {
@@ -30,22 +32,36 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
     return 'upcoming';
   };
 
+  const getBlindTitle = (type: string) => {
+    switch (type) {
+      case 'small':
+        return t.smallBlindTitle;
+      case 'big':
+        return t.bigBlindTitle;
+      case 'boss':
+        return t.bossBlindTitle;
+      default:
+        return type.toUpperCase();
+    }
+  };
+
   return (
-    <div className="blind-select-screen pixel-panel pixel-panel-blood" role="region" aria-label="Selezione Blind">
+    <div className="blind-select-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.blindSelectTitle}>
       <div className="blind-select-header">
-        <span className="ante-badge status-gold">[ ANTE {ante} DI 8 ]</span>
-        <h2 className="blind-select-title">SCEGLI LA PROSSIMA SFIDA NELLA TAVERNA</h2>
-        <p className="blind-select-desc">
-          Supera l&apos;obiettivo di ciascun Blind per guadagnare oro ed avanzare.
-          Small e Big Blind possono essere saltati per riscattare un Tag istantaneo. Il Boss è obbligatorio.
-        </p>
+        <span className="ante-badge status-gold">[ {t.ante} {ante} / 8 ]</span>
+        <h2 className="blind-select-title">{t.blindSelectTitle}</h2>
+        <p className="blind-select-desc">{t.blindSelectSubtitle}</p>
       </div>
 
-      <div className="blinds-grid" role="list" aria-label="Elenco Blind dell'Ante">
+      <div className="blinds-grid" role="list" aria-label={t.blindSelectTitle}>
         {blinds.map((b) => {
           const status = getStatus(b);
           const isCurrent = status === 'current';
           const isCompleted = status === 'completed';
+          const title = getBlindTitle(b.type);
+
+          const bossRuleInfo = b.bossRule ? (t.bossRules[b.bossRule.id] ?? b.bossRule) : null;
+          const skipTagInfo = b.skipTag ? (t.tagRewards[b.skipTag.id] ?? b.skipTag) : null;
 
           return (
             <article
@@ -58,35 +74,35 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
             >
               <div className="blind-card-header">
                 <span className="blind-tag-label">[{b.type.toUpperCase()}]</span>
-                <h3 className="blind-title">{b.title}</h3>
+                <h3 className="blind-title">{title}</h3>
               </div>
 
               <div className="blind-stats">
                 <div className="blind-stat-row">
-                  <span className="stat-name">OBIETTIVO:</span>
+                  <span className="stat-name">{t.target}:</span>
                   <span className="stat-val status-blood">{b.scoreTarget} PTS</span>
                 </div>
                 <div className="blind-stat-row">
-                  <span className="stat-name">RICOMPENSA:</span>
+                  <span className="stat-name">{t.reward}:</span>
                   <span className="stat-val status-gold">+${b.rewardMoney}</span>
                 </div>
               </div>
 
               {/* Regola Boss */}
-              {b.bossRule && (
+              {bossRuleInfo && (
                 <div className="boss-rule-box">
-                  <span className="boss-rule-tag">[ REGOLA DEL BOSS ]</span>
-                  <h4 className="boss-rule-name">{b.bossRule.name}</h4>
-                  <p className="boss-rule-desc">{b.bossRule.description}</p>
+                  <span className="boss-rule-tag">[ {t.activeBoss} ]</span>
+                  <h4 className="boss-rule-name">{bossRuleInfo.name}</h4>
+                  <p className="boss-rule-desc">{bossRuleInfo.description}</p>
                 </div>
               )}
 
               {/* Tag di Skip */}
-              {b.skipTag && b.canSkip && (
+              {skipTagInfo && b.canSkip && (
                 <div className="skip-tag-box">
-                  <span className="skip-tag-title">[ TAG DISPONIBILE AL SALTO ]</span>
+                  <span className="skip-tag-title">[ {t.tagReward} ]</span>
                   <p className="skip-tag-desc">
-                    <strong>{b.skipTag.name}</strong>: {b.skipTag.description}
+                    <strong>{skipTagInfo.name}</strong>: {skipTagInfo.description}
                   </p>
                 </div>
               )}
@@ -94,7 +110,7 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
               {/* Azioni del Blind */}
               <div className="blind-actions">
                 {isCompleted && (
-                  <span className="completed-badge">[ GIA RISOLTO ]</span>
+                  <span className="completed-badge">[ COMPLETED ]</span>
                 )}
 
                 {isCurrent && (
@@ -103,9 +119,9 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
                       type="button"
                       className="pixel-btn pixel-btn-blood btn-play-blind"
                       onClick={() => onPlayBlind(b)}
-                      aria-label={`Gioca ${b.title}. Obiettivo ${b.scoreTarget} punti.`}
+                      aria-label={`${t.selectBlindBtn} ${title}`}
                     >
-                      {b.type === 'boss' ? '[ COMBATTI IL BOSS ]' : '[ GIOCA BLIND ]'}
+                      {t.selectBlindBtn}
                     </button>
 
                     {b.canSkip && (
@@ -113,16 +129,16 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
                         type="button"
                         className="pixel-btn btn-skip-blind"
                         onClick={() => onSkipBlind(b)}
-                        aria-label={`Salta ${b.title} e riscatta il tag ${b.skipTag?.name}.`}
+                        aria-label={`${t.skipBlindBtn} ${title}`}
                       >
-                        [ SALTA E PRENDI TAG ]
+                        {t.skipBlindBtn}
                       </button>
                     )}
                   </>
                 )}
 
                 {!isCurrent && !isCompleted && (
-                  <span className="locked-badge">[ BLOCCATO ]</span>
+                  <span className="locked-badge">[ LOCKED ]</span>
                 )}
               </div>
             </article>
@@ -132,4 +148,3 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
     </div>
   );
 };
-

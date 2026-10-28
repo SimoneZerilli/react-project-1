@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Joker } from '../types/game';
+import { useLanguage } from '../i18n/LanguageContext';
 import './JokerCard.css';
 
 interface JokerCardProps {
@@ -13,13 +14,18 @@ export const JokerCard: React.FC<JokerCardProps> = ({
   onSell,
   showSellButton = true,
 }) => {
-  const rarityLabel = joker.rarity === 'legendary' ? 'LEGGENDARIO' : joker.rarity === 'rare' ? 'RARO' : 'COMUNE';
+  const { t } = useLanguage();
+  const localizedInfo = t.jokers[joker.id] ?? {
+    name: joker.name,
+    description: joker.description,
+  };
+  const rarityLabel = t.rarities[joker.rarity] ?? joker.rarity.toUpperCase();
 
   return (
     <div
       className={`pixel-joker-card rarity-${joker.rarity}`}
       role="article"
-      aria-label={`Jolly: ${joker.name}. ${rarityLabel}. ${joker.description}`}
+      aria-label={`${t.badgeJoker}: ${localizedInfo.name}. ${rarityLabel}. ${localizedInfo.description}`}
       tabIndex={0}
     >
       <div className="joker-header">
@@ -27,9 +33,22 @@ export const JokerCard: React.FC<JokerCardProps> = ({
         <span className="joker-cost">${joker.cost}</span>
       </div>
 
+      <div className="joker-art-frame">
+        {joker.imagePath ? (
+          <img
+            src={joker.imagePath}
+            alt={localizedInfo.name}
+            className="joker-art-img"
+            draggable={false}
+          />
+        ) : (
+          <div className="joker-art-placeholder">[ ? ]</div>
+        )}
+      </div>
+
       <div className="joker-body">
-        <h3 className="joker-name">{joker.name}</h3>
-        <p className="joker-description">{joker.description}</p>
+        <h3 className="joker-name">{localizedInfo.name}</h3>
+        <p className="joker-description">{localizedInfo.description}</p>
       </div>
 
       {showSellButton && onSell && (
@@ -41,13 +60,12 @@ export const JokerCard: React.FC<JokerCardProps> = ({
               e.stopPropagation();
               onSell(joker.id);
             }}
-            aria-label={`Vendi ${joker.name} per $${joker.sellValue} d'oro`}
+            aria-label={`${t.sellBtn} ${localizedInfo.name} for $${joker.sellValue}`}
           >
-            [ VENDI: +${joker.sellValue} ]
+            [ {t.sellBtn}: +${joker.sellValue} ]
           </button>
         </div>
       )}
     </div>
   );
 };
-

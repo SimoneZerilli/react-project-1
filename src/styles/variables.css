@@ -1,33 +1,33 @@
 :root {
-  /* Palette Dark Medieval Tavern - Insanguinata */
-  --bg-tavern: #0c0a09;
-  --bg-surface: #171311;
-  --bg-surface-elevated: #221a16;
-  --bg-parchment: #1d1612;
-  --bg-parchment-stained: #2a1515;
+  /* Palette Dark Medieval Tavern - Insanguinata ad Alto Dettaglio */
+  --bg-tavern: #0a0807;
+  --bg-surface: #14100e;
+  --bg-surface-elevated: #1e1713;
+  --bg-parchment: #1a1410;
+  --bg-parchment-stained: #261212;
 
-  /* Palette Sangue & Ruggine */
+  /* Palette Sangue, Ruggine & Gore */
   --color-blood-fresh: #b80d0d;
   --color-blood-bright: #e61919;
-  --color-blood-dark: #520606;
-  --color-blood-dried: #310707;
-  --color-blood-splatter: rgba(184, 13, 13, 0.35);
+  --color-blood-dark: #4a0505;
+  --color-blood-dried: #290404;
+  --color-blood-splatter: rgba(184, 13, 13, 0.45);
 
-  /* Oro ossidato e Ferro battuto */
+  /* Oro Antico e Ferro Battuto ad Alto Dettaglio */
   --color-gold: #c99e32;
-  --color-gold-bright: #ebc359;
-  --color-gold-shadow: #694d0c;
+  --color-gold-bright: #f0cb67;
+  --color-gold-shadow: #5c4309;
   --color-iron: #3d3530;
-  --color-iron-light: #61564f;
-  --color-iron-dark: #191512;
+  --color-iron-light: #5e5248;
+  --color-iron-dark: #15110e;
 
-  /* Testo */
-  --text-primary: #eddcd2;
-  --text-muted: #9e8e81;
-  --text-blood: #ff4d4d;
-  --text-gold: #ebc359;
+  /* Tipografia */
+  --text-primary: #f2e6dc;
+  --text-muted: #9c8b7c;
+  --text-blood: #ff4747;
+  --text-gold: #f0cb67;
 
-  /* Semi Carte (colori cupi e definiti) */
+  /* Semi Carte */
   --suit-hearts: #cc1111;
   --suit-diamonds: #d9531e;
   --suit-clubs: #4a7c59;
@@ -38,27 +38,29 @@
   --focus-outline: 3px solid #ff2222;
   --focus-offset: 3px;
 
-  /* Cornici Pixel Battute & Insanguinate */
+  /* Cornici Pixel a Granularità Fina (High Detail 2px Steps) */
   --pixel-border-blood:
-    0 -3px 0 0 var(--color-blood-bright),
-    0 3px 0 0 var(--color-blood-dark),
-    -3px 0 0 0 var(--color-blood-bright),
-    3px 0 0 0 var(--color-blood-dark),
-    0 0 0 3px #000;
+    0 -2px 0 0 var(--color-blood-bright),
+    0 2px 0 0 var(--color-blood-dark),
+    -2px 0 0 0 var(--color-blood-bright),
+    2px 0 0 0 var(--color-blood-dark),
+    0 0 0 2px #000,
+    0 0 10px rgba(184, 13, 13, 0.4);
 
   --pixel-border-iron:
-    0 -3px 0 0 var(--color-iron-light),
-    0 3px 0 0 var(--color-iron-dark),
-    -3px 0 0 0 var(--color-iron-light),
-    3px 0 0 0 var(--color-iron-dark),
-    0 0 0 3px #000;
+    0 -2px 0 0 var(--color-iron-light),
+    0 2px 0 0 var(--color-iron-dark),
+    -2px 0 0 0 var(--color-iron-light),
+    2px 0 0 0 var(--color-iron-dark),
+    0 0 0 2px #000;
 
   --pixel-border-gold:
-    0 -3px 0 0 var(--color-gold),
-    0 3px 0 0 var(--color-gold-shadow),
-    -3px 0 0 0 var(--color-gold),
-    3px 0 0 0 var(--color-gold-shadow),
-    0 0 0 3px #000;
+    0 -2px 0 0 var(--color-gold-bright),
+    0 2px 0 0 var(--color-gold-shadow),
+    -2px 0 0 0 var(--color-gold-bright),
+    2px 0 0 0 var(--color-gold-shadow),
+    0 0 0 2px #000,
+    0 0 8px rgba(201, 158, 50, 0.3);
 
   --font-pixel: 'Courier New', 'Lucida Console', Monaco, monospace;
 }

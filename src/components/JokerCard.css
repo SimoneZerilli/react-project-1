@@ -1,6 +1,6 @@
 .pixel-joker-card {
-  width: 130px;
-  min-height: 150px;
+  width: 136px;
+  min-height: 220px;
   background-color: var(--bg-surface-elevated);
   border: 2px solid var(--color-gold);
   box-shadow: 
@@ -13,7 +13,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   user-select: none;
   font-family: var(--font-pixel);
@@ -59,10 +59,38 @@
   color: var(--color-gold-bright);
 }
 
+.joker-art-frame {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background-color: transparent;
+  border: 1px solid var(--color-iron);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 2px 0;
+}
+
+.joker-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: contrast(1.05) brightness(1);
+  display: block;
+}
+
+.joker-art-placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .joker-body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex-grow: 1;
 }
 
 .joker-name {

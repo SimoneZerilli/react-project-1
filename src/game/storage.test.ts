@@ -12,7 +12,7 @@ import { createAnteBlinds } from './blinds';
 
 describe('Storage Engine (src/game/storage.ts)', () => {
   const dummyState: SavedRunState = {
-    version: 1,
+    version: 2,
     ante: 2,
     phase: 'select_blind',
     activeBlindType: 'small',
