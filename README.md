@@ -86,19 +86,27 @@ L'accessibilità di Balcard è conforme alle linee guida internazionali del Cons
    - *Roving Tabindex Pattern*: [Keyboard Navigation within Components](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) (utilizzato per la gestione del focus tra le carte in mano).
    - *Dialog (Modal) Pattern*: [Modal Dialog Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) (applicato alla finestra di aiuto e comandi rapiti con focus trap).
    - *Live Regions & Status*: [Status Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/status/) (utilizzato per gli annunci tempestivi a screen reader dopo ogni mano o scarto).
-2. **W3C Web Content Accessibility Guidelines (WCAG) 2.1 & 2.2**:
-   - *Success Criterion 1.4.1 Use of Color (Level A)*: [Understanding Use of Color](https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html) (garantisce che il seme sia identificato da simboli testuali e non solo dal colore rosso/nero).
-   - *Success Criterion 1.4.3 Contrast (Minimum - Level AA)*: [Understanding Contrast Minimum](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) (rapporti di contrasto verificati superiori a 7.5:1).
-   - *Success Criterion 2.3.3 Animation from Interactions (Level AAA)*: [Understanding Animation from Interactions](https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html) (gestione della media query `prefers-reduced-motion`).
-   - *Success Criterion 2.5.8 Target Size (Minimum - Level AA)*: [Understanding Target Size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) (aree interattive minime di 44×44 px).
-3. **MDN Web Docs**:
+2. **European Accessibility Act (EAA - Direttiva UE 2019/882) & Standard EN 301 549**:
+   - Requisiti europei di accessibilità per prodotti e servizi digitali: conformità obbligatoria a 4 principi (Percettibile, Utilizzabile, Comprensibile, Robusto).
+   - *Dichiarazione di Accessibilità & Meccanismo di Feedback*: implementazione del registro accessibilità in-app con contatto per la notifica delle barriere (EN 301 549 / EAA Cap. 4).
+3. **W3C Web Content Accessibility Guidelines (WCAG) 2.1 & 2.2 (Livello A, AA, AAA)**:
+   - *Success Criterion 1.4.1 Use of Color (Level A)*: [Understanding Use of Color](https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html) (il seme non è mai comunicato unicamente dal colore; ogni carta espone badge testuali espliciti ed etichette vocali complete).
+   - *Success Criterion 1.4.3 Contrast (Minimum - Level AA)*: [Understanding Contrast Minimum](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) (rapporti di contrasto verificati superiori a 7.5:1, conformi anche a livello AAA).
+   - *Success Criterion 1.4.10 Reflow (Level AA)*: [Understanding Reflow](https://www.w3.org/WAI/WCAG21/Understanding/reflow.html) (nessuna perdita di contenuto o bidimensional scrolling fino a 320 CSS pixel e al 400% di zoom).
+   - *Success Criterion 2.1.1 Keyboard (Level A)*: Navigabilità completa di ogni interazione e acquisto senza necessità di mouse o puntatore.
+   - *Success Criterion 2.1.2 No Keyboard Trap (Level A)*: La modale di aiuto intrappola ciclicamente il focus e si chiude sempre con tasto Escape restituendo il focus all'elemento originario.
+   - *Success Criterion 2.4.1 Bypass Blocks (Level A)*: [Understanding Bypass Blocks](https://www.w3.org/WAI/WCAG21/Understanding/bypass-blocks.html) (Skip Link iniziale visibile su focus per saltare direttamente al contenuto principale `#main-content`).
+   - *Success Criterion 2.4.2 Page Titled (Level A)*: [Understanding Page Titled](https://www.w3.org/WAI/WCAG21/Understanding/page-titled.html) (titolo dinamico `<title>` in lingua attiva aggiornato a ogni fase, Ante, stato del punteggio ed esito).
+   - *Success Criterion 2.3.3 Animation from Interactions (Level AAA)*: [Understanding Animation from Interactions](https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html) (supporto nativo a `prefers-reduced-motion` e toggle manuale in-app).
+   - *Success Criterion 2.5.8 Target Size (Minimum - Level AA)*: [Understanding Target Size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) (tutte le aree di tocco e pulsanti rispettano almeno 44×44 px / min 24×24 px).
+4. **MDN Web Docs**:
    - *ARIA: checkbox role*: [MDN ARIA checkbox](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/checkbox_role) (stato `aria-checked` per la selezione delle carte).
    - *CSS Media Query `prefers-reduced-motion`*: [MDN prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
-4. **Deque University & axe-core Rules**:
+5. **Deque University & axe-core Rules**:
    - *Standard Ruleset per conformità WCAG*: [Deque University axe Rules](https://dequeuniversity.com/rules/axe/4.4) (test di etichettatura, unicità degli ID, ruoli semantici e contrasti).
-5. **Heydon Pickering - "Inclusive Components"**:
+6. **Heydon Pickering - "Inclusive Components"**:
    - *Design patterns per elenchi interattivi e pulsanti di selezione*: [Inclusive Components](https://inclusive-components.design/) (ispirazione per il layout responsive e la persistenza dello stato di selezione durante l'ordinamento).
-6. **Lighthouse Accessibility Auditing**:
+7. **Lighthouse Accessibility Auditing**:
    - Criteri di verifica per PWA installabili, contrasto cromatico e gerarchia dei tag di intestazione (`h1`, `h2`, `main`, `banner`, `status`).
 
 ---
@@ -153,6 +161,16 @@ Durante l'iterativo processo di sviluppo assistito dall'intelligenza artificiale
 - **Dove ha sbagliato**: Il pulsante `[ Installa app ]` era vincolato alla condizione `{installPrompt && ...}`. Poiché l'evento del browser `beforeinstallprompt` può scattare prima dell'idratazione dei componenti React, o non scattare affatto su browser come Safari/iOS o desktop con criteri euristici differenti, il pulsante risultava del tutto invisibile.
 - **Come ce ne siamo accorti**: L'utente ha segnalato: *"Inoltre mi controlli che funziona ancora l'installazione come app (che non vedo più il pulsante sulla home)"*.
 - **Come è stato risolto**: Il pulsante è stato reso permanentemente visibile nella schermata Home. In `main.tsx` l'evento viene catturato anticipatamente a livello di `window.deferredInstallPrompt`. Nel click handler è stato implementato un sistema a tre livelli: invocazione del prompt nativo se disponibile, notifica se l'app è già in standalone, e istruzioni guidate passo-passo per iOS (Safari "Aggiungi a schermata Home") e desktop.
+
+### Errore 10: Icone PWA e desktop shortcut non aggiornate (persistenza del vecchio logo "B")
+- **Dove ha sbagliato**: All'aggiunta della nuova icona grafica con il teschio giullare insanguinato caricata dall'utente, l'AI ha generato le icone PNG ma non ha aggiornato il `favicon.ico` multi-risoluzione (16px, 32px, 48px, 256px), né ha incrementato la versione della cache del Service Worker o i parametri di cache-busting dei file icona. Di conseguenza, il browser desktop e Windows continuavano a mostrare il vecchio logo rettangolare "B" memorizzato nella cache locale del sistema operativo.
+- **Come ce ne siamo accorti**: L'utente ha condiviso lo screenshot del collegamento desktop di Windows chiedendo: *"Non capisco perche la versione scaricata abbia ancora questa icona se riesci puoi mettere quella nuova"*.
+- **Come è stato risolto**: È stato compilato tramite Canvas un file `public/favicon.ico` multi-risoluzione a 4 layer contenente l'emblema del teschio giullare, sono state rigenerate tutte le icone PNG (192, 512, maskable 512, favicon), è stato applicato il versioning `?v=3` in `manifest.webmanifest` e `index.html`, e la cache del Service Worker è stata aggiornata a `balcard-v3` invalidando istantaneamente le vecchie risorse salvate nel browser.
+
+### Errore 11: Assenza di Skip Link e titolazione statica rispetto ai requisiti EAA / WCAG 2.2
+- **Dove ha sbagliato**: Nelle prime versioni dell'applicazione, il tag `<title>` rimaneva statico ("Balcard - Dark Medieval Roguelike Poker") a prescindere dal progresso della partita, e non era presente un meccanismo di bypass diretto al contenuto principale (`Skip Link`). Questo violava i criteri WCAG 2.4.1 (Salto dei blocchi) e 2.4.2 (Titolazione della pagina), rendendo l'orientamento cognitivo difficoltoso per utenti con lettori di schermo.
+- **Come ce ne siamo accorti**: Nel corso dell'audit del documento ufficiale sui requisiti dell'European Accessibility Act (EAA - Direttiva UE 2019/882 e EN 301 549), sono emerse queste due lacune normative.
+- **Come è stato risolto**: È stato implementato lo Skip Link accessibile `<a href="#main-content" className="skip-link">` (nascosto fuori schermo e reso visibile al focus con contrasto elevato), è stato associato `id="main-content"` e `tabIndex={-1}` ai contenitori attivi di ogni schermata, ed è stato introdotto un effetto reattivo che sincronizza `document.title` in tempo reale con la fase di gioco (Home, Selezione Blind, Round in corso con punteggio e Ante, Bottega, Sconfitta o Trionfo). Inoltre è stata integrata la Dichiarazione di Accessibilità con canale di feedback e il toggle per forzare animazioni ridotte indipendentemente dalle impostazioni di sistema.
 
 ---
 
@@ -238,7 +256,7 @@ react-project-1/
 Per eseguire l'intera suite di test e verificare la build di produzione:
 
 ```bash
-# Esecuzione dei 63 test unitari di logica e accessibilità
+# Esecuzione dei 66 test unitari di logica e accessibilità
 npm run test
 
 # Controllo tipi rigoroso e compilazione bundle di produzione

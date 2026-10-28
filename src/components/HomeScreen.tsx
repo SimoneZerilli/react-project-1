@@ -42,7 +42,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   }, []);
 
   return (
-    <main className="home-screen pixel-panel pixel-panel-blood blood-drip-edge" role="main" aria-label="Home Screen Balcard">
+    <main
+      className="home-screen pixel-panel pixel-panel-blood blood-drip-edge"
+      role="main"
+      id="main-content"
+      tabIndex={-1}
+      aria-label="Home Screen Balcard"
+    >
       <div className="home-hero">
         <span className="home-crest">[ {t.appSubtitle} ]</span>
         <h1 className="home-title">Balcard</h1>        

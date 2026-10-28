@@ -141,7 +141,7 @@ body, p, span, li, label,
   color: #fff;
 }
 
-/* Animazioni Ridotte per Accessibilità (prefers-reduced-motion) */
+/* Animazioni Ridotte per Accessibilità (prefers-reduced-motion & Override Manuale) */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -158,6 +158,47 @@ body, p, span, li, label,
   .pixel-btn:active {
     transform: none !important;
   }
+}
+
+:root[data-reduced-motion='true'] *,
+:root[data-reduced-motion='true'] *::before,
+:root[data-reduced-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-reduced-motion='true'] .pixel-card:hover,
+:root[data-reduced-motion='true'] .pixel-card.is-selected,
+:root[data-reduced-motion='true'] .pixel-btn:hover,
+:root[data-reduced-motion='true'] .pixel-btn:active {
+  transform: none !important;
+}
+
+/* Skip Link (WCAG 2.4.1 - Bypass Blocks) */
+.skip-link {
+  position: absolute;
+  top: -120px;
+  left: 12px;
+  z-index: 99999;
+  background-color: var(--color-blood-dark);
+  color: var(--color-gold-bright);
+  padding: 10px 16px;
+  font-family: var(--font-small);
+  font-size: 0.95rem;
+  font-weight: bold;
+  border: 2px solid var(--color-gold);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
+  text-decoration: none;
+  transition: top 0.15s ease-out;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 12px;
+  outline: 3px solid var(--color-gold-bright) !important;
+  outline-offset: 2px;
 }
 
 /* Riquadri Taverna */

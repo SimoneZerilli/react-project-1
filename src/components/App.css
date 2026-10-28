@@ -384,3 +384,90 @@
   font-size: 0.8rem;
   padding: 8px 0;
 }
+
+/* WCAG 1.4.10 Reflow (320px width & 400% zoom support without horizontal scroll) */
+@media (max-width: 360px) {
+  .tavern-app {
+    padding: 8px 4px;
+    gap: 8px;
+  }
+
+  .tavern-title {
+    font-size: 1.35rem;
+  }
+
+  .tavern-header-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-controls-group {
+    gap: 4px;
+  }
+
+  .header-controls-group .pixel-btn {
+    padding: 6px 4px;
+    font-size: 0.72rem;
+    min-height: 44px;
+  }
+
+  .tavern-status-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 6px 4px;
+  }
+
+  .status-item {
+    padding: 4px 6px;
+  }
+
+  .status-label {
+    font-size: 0.65rem;
+  }
+
+  .status-value {
+    font-size: 0.85rem;
+  }
+
+  .pixel-card {
+    width: 62px;
+    height: 96px;
+  }
+
+  .card-suit-badge {
+    font-size: 0.7rem;
+    padding: 0 2px;
+  }
+
+  .card-chips-badge {
+    font-size: 0.75rem;
+    padding: 0 2px;
+  }
+
+  .hand-container {
+    gap: 4px;
+    padding: 6px 1px;
+  }
+
+  .table-controls {
+    gap: 6px;
+  }
+
+  .btn-sort {
+    font-size: 0.72rem;
+    padding: 6px 4px;
+  }
+
+  .play-controls {
+    gap: 8px;
+  }
+
+  .btn-action {
+    font-size: 0.85rem;
+    padding: 10px 8px;
+  }
+
+  .economic-receipt {
+    padding: 10px 8px;
+  }
+}

@@ -35,11 +35,43 @@ describe('Accessibility & WCAG Compliance', () => {
     }
   });
 
-  it('il foglio di stile dovrebbe implementare @media (prefers-reduced-motion: reduce)', () => {
+  it('il foglio di stile dovrebbe implementare @media (prefers-reduced-motion: reduce) e override manuale', () => {
     const cssPath = path.resolve(process.cwd(), 'src/styles/pixel-theme.css');
     const cssContent = fs.readFileSync(cssPath, 'utf-8');
     expect(cssContent).toContain('prefers-reduced-motion: reduce');
     expect(cssContent).toContain('animation-duration: 0.001ms');
+    expect(cssContent).toContain(":root[data-reduced-motion='true']");
+  });
+
+  it('dovrebbe includere la definizione dello Skip Link per WCAG 2.4.1 (Salto dei blocchi)', () => {
+    const cssPath = path.resolve(process.cwd(), 'src/styles/pixel-theme.css');
+    const cssContent = fs.readFileSync(cssPath, 'utf-8');
+    expect(cssContent).toContain('.skip-link');
+    expect(cssContent).toContain('.skip-link:focus');
+  });
+
+  it('dovrebbe supportare il reflow fluido a 320px di larghezza senza scroll orizzontale (WCAG 1.4.10)', () => {
+    const appCssPath = path.resolve(process.cwd(), 'src/components/App.css');
+    const appCssContent = fs.readFileSync(appCssPath, 'utf-8');
+    expect(appCssContent).toContain('@media (max-width: 360px)');
+    expect(appCssContent).toContain('overflow-x: hidden');
+  });
+
+  it('dovrebbe contenere tutte le traduzioni per Skip Link, titoli dinamici e dichiarazione di accessibilità EAA', () => {
+    expect(translations.it.skipToContent).toBe('Salta al contenuto principale');
+    expect(translations.en.skipToContent).toBe('Skip to main content');
+
+    expect(translations.it.accessibilityStatementTitle).toBeTruthy();
+    expect(translations.en.accessibilityStatementTitle).toBeTruthy();
+
+    expect(translations.it.titleHome).toBeTruthy();
+    expect(translations.it.titleSelectBlind).toBeTruthy();
+    expect(translations.it.titleShop).toBeTruthy();
+    expect(translations.it.titleGameOver).toBeTruthy();
+    expect(translations.it.titleVictory).toBeTruthy();
+
+    expect(translations.it.accessibilityFeatures.length).toBeGreaterThanOrEqual(5);
+    expect(translations.en.accessibilityFeatures.length).toBeGreaterThanOrEqual(5);
   });
 
   it('la palette principale deve rispettare i requisiti di contrasto WCAG AA (> 4.5:1)', () => {

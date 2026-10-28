@@ -22,9 +22,11 @@ export const VictoryScreen: React.FC<VictoryScreenProps> = ({
   }, []);
 
   return (
-    <section
+    <main
       className="victory-screen pixel-panel pixel-panel-blood"
-      role="region"
+      id="main-content"
+      tabIndex={-1}
+      role="main"
       aria-label={t.victoryTitle}
     >
       <div className="victory-banner banner-won pixel-panel">
@@ -96,6 +98,6 @@ export const VictoryScreen: React.FC<VictoryScreenProps> = ({
           {t.newRunBtn}
         </button>
       </div>
-    </section>
+    </main>
   );
 };

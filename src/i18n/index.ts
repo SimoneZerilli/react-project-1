@@ -129,6 +129,27 @@ export interface Translations {
 
   // Joker Lore
   jokers: Record<string, { name: string; description: string }>;
+
+  // Accessibility & Titles (WCAG 2.2 AA / EAA)
+  skipToContent: string;
+  helpTabCommands: string;
+  helpTabAccessibility: string;
+  accessibilityStatementTitle: string;
+  accessibilityCompliance: string;
+  accessibilityFeaturesTitle: string;
+  accessibilityFeatures: string[];
+  accessibilityContactTitle: string;
+  accessibilityContactText: string;
+  reducedMotionToggleLabel: string;
+  reducedMotionStatusOn: string;
+  reducedMotionStatusOff: string;
+  reducedMotionHint: string;
+  titleHome: string;
+  titleSelectBlind: string;
+  titleRoundWon: string;
+  titleShop: string;
+  titleGameOver: string;
+  titleVictory: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -333,6 +354,35 @@ export const translations: Record<Language, Translations> = {
         description: 'Upon winning a Blind, grants +$2 gold for each unused hand.',
       },
     },
+
+    skipToContent: 'Skip to main content',
+    helpTabCommands: 'Keyboard Commands',
+    helpTabAccessibility: 'Accessibility & EAA',
+    accessibilityStatementTitle: 'Accessibility Statement & Preferences',
+    accessibilityCompliance: 'Balcard conforms to WCAG 2.1 & 2.2 Level AA and the European Accessibility Act (EAA - EU Directive 2019/882 / EN 301 549).',
+    accessibilityFeaturesTitle: 'Key Implemented Accessibility Features:',
+    accessibilityFeatures: [
+      'WAI-ARIA Roving Tabindex for full keyboard navigation (cards, jokers, shop)',
+      'Live Regions (aria-live) announcing hand evaluations, points, and score deltas',
+      'Modal focus trapping with Escape close key and focus restoration',
+      'Skip Link allowing immediate bypass to the primary interactive content',
+      'Dynamic descriptive document titles on every screen and game phase',
+      'Fluid 320px CSS reflow with zero horizontal scroll and high-contrast focus rings',
+      'Minimum WCAG AA color contrast (4.5:1 text, 3:1 graphical elements)',
+      'Touch target sizes meeting or exceeding 44x44px (minimum 24x24px)',
+    ],
+    accessibilityContactTitle: 'Feedback & Contact Channel:',
+    accessibilityContactText: 'To report accessibility barriers or request alternative formats, contact: accessibility@balcard.tavern',
+    reducedMotionToggleLabel: 'Force Reduced Motion',
+    reducedMotionStatusOn: 'Enabled (No Motion)',
+    reducedMotionStatusOff: 'Default (Follows OS)',
+    reducedMotionHint: 'Overrides browser and operating system animation settings.',
+    titleHome: 'Tavern Portal',
+    titleSelectBlind: 'Select Blind',
+    titleRoundWon: 'Blind Conquered!',
+    titleShop: 'Tavern Relic Shop',
+    titleGameOver: 'Defeat (Game Over)',
+    titleVictory: 'Supreme Ascension (Victory)',
   },
 
   it: {
@@ -536,5 +586,34 @@ export const translations: Record<Language, Translations> = {
         description: 'Alla vittoria del Blind assegna +$2 addizionali per ogni mano (Hand) non utilizzata.',
       },
     },
+
+    skipToContent: 'Salta al contenuto principale',
+    helpTabCommands: 'Comandi da Tastiera',
+    helpTabAccessibility: 'Accessibilità & EAA',
+    accessibilityStatementTitle: 'Dichiarazione di Accessibilità & Preferenze',
+    accessibilityCompliance: 'Balcard è conforme alle linee guida WCAG 2.1 & 2.2 Livello AA e ai requisiti dell\'European Accessibility Act (EAA - Direttiva UE 2019/882 / EN 301 549).',
+    accessibilityFeaturesTitle: 'Caratteristiche di Accessibilità Implementate:',
+    accessibilityFeatures: [
+      'Pattern WAI-ARIA Roving Tabindex per navigazione autonoma da tastiera (carte, jolly, bottega)',
+      'Live Region (aria-live polite) con annunci dinamici di combinazioni, punteggio e distacco dall\'obiettivo',
+      'Dialog modale con trappola del focus (focus trap), tasto Esc e ripristino del focus',
+      'Skip Link iniziale per saltare direttamente al contenuto interattivo principale',
+      'Titolo del documento dinamico (<title>) aggiornato in tempo reale a ogni fase di gioco',
+      'Reflow CSS fluido a 320px senza barre di scorrimento orizzontale e anello di focus ad alto contrasto',
+      'Contrasto cromatico conforme WCAG AA (minimo 4.5:1 per testi, 3:1 per elementi grafici essenziali)',
+      'Aree di tocco pari o superiori a 44x44px (minimo 24x24px)',
+    ],
+    accessibilityContactTitle: 'Canale di Feedback & Segnalazioni:',
+    accessibilityContactText: 'Per segnalare barriere di accessibilità o richiedere formati alternativi, scrivi a: accessibilita@balcard.taverna',
+    reducedMotionToggleLabel: 'Forza Animazioni Ridotte',
+    reducedMotionStatusOn: 'Attivo (Nessun Movimento)',
+    reducedMotionStatusOff: 'Predefinito (Segue Sistema)',
+    reducedMotionHint: 'Sovrascrive le impostazioni di animazione del browser e del sistema operativo.',
+    titleHome: 'Portale della Taverna',
+    titleSelectBlind: 'Selezione Blind',
+    titleRoundWon: 'Blind Conquistato!',
+    titleShop: 'Bottega dei Relitti',
+    titleGameOver: 'Caduto nella Taverna (Game Over)',
+    titleVictory: 'Trionfo Supremo (Vittoria)',
   },
 };

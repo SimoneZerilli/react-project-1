@@ -85,3 +85,112 @@
   font-style: italic;
 }
 
+/* Tabs navigazione guida */
+.help-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--color-iron);
+  padding-bottom: 8px;
+}
+
+.help-tab-btn {
+  flex: 1;
+  font-size: 0.85rem;
+  min-height: 44px;
+  padding: 8px 12px;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--color-iron-light);
+  color: var(--text-muted);
+}
+
+.help-tab-btn.is-active {
+  background-color: var(--color-blood-dark);
+  color: var(--color-gold-bright);
+  border-color: var(--color-gold);
+  font-weight: bold;
+}
+
+/* Sezione Accessibilità & Preferenze */
+.accessibility-statement-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.reduced-motion-control {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--color-gold-shadow);
+  padding: 12px 14px;
+}
+
+.reduced-motion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-label {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--color-gold-bright);
+}
+
+.control-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.accessibility-compliance-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.accessibility-subhead {
+  font-size: 0.85rem;
+  color: var(--color-gold-bright);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.accessibility-feature-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.accessibility-contact-box {
+  background-color: var(--bg-surface-elevated);
+  border: 1px dashed var(--color-iron-light);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-title {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--color-gold);
+}
+
+.contact-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+  word-break: break-word;
+}
+

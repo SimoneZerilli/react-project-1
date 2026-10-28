@@ -46,7 +46,13 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
   };
 
   return (
-    <div className="blind-select-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.blindSelectTitle}>
+    <main
+      className="blind-select-screen pixel-panel pixel-panel-blood"
+      id="main-content"
+      tabIndex={-1}
+      role="main"
+      aria-label={t.blindSelectTitle}
+    >
       <div className="blind-select-header">
         <span className="ante-badge status-gold">[ {t.ante} {ante} / 8 ]</span>
         <h2 className="blind-select-title">{t.blindSelectTitle}</h2>
@@ -145,6 +151,6 @@ export const BlindSelect: React.FC<BlindSelectProps> = ({
           );
         })}
       </div>
-    </div>
+    </main>
   );
 };

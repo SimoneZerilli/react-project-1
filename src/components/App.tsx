@@ -104,6 +104,78 @@ export const App: React.FC = () => {
   const [discardPile, setDiscardPile] = useState<PlayingCard[]>([]);
   const [announcement, setAnnouncement] = useState('Benvenuto alla Taverna di Balcard.');
 
+  // Preferenza animazioni ridotte (WCAG 2.3.3 & EN 301 549)
+  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('balcard_reduced_motion') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isReducedMotion) {
+        document.documentElement.setAttribute('data-reduced-motion', 'true');
+      } else {
+        document.documentElement.removeAttribute('data-reduced-motion');
+      }
+    }
+    try {
+      localStorage.setItem('balcard_reduced_motion', isReducedMotion ? 'true' : 'false');
+    } catch {
+      // storage non disponibile
+    }
+  }, [isReducedMotion]);
+
+  const toggleReducedMotion = useCallback(() => {
+    setIsReducedMotion((prev) => {
+      const next = !prev;
+      setAnnouncement(
+        language === 'it'
+          ? (next ? 'Animazioni ridotte forzate: Attivo.' : 'Animazioni ridotte forzate: Disattivo.')
+          : (next ? 'Force reduced motion: Enabled.' : 'Force reduced motion: Disabled.')
+      );
+      return next;
+    });
+  }, [language]);
+
+  // Aggiornamento dinamico del titolo del documento (WCAG 2.4.2 Livello A)
+  useEffect(() => {
+    let phaseTitle = '';
+    switch (phase) {
+      case 'home':
+        phaseTitle = t.titleHome;
+        break;
+      case 'select_blind':
+        phaseTitle = `${t.titleSelectBlind} - Ante ${ante}`;
+        break;
+      case 'in_blind': {
+        const blindName =
+          currentBlind.type === 'small'
+            ? t.smallBlindTitle
+            : currentBlind.type === 'big'
+            ? t.bigBlindTitle
+            : t.bossBlindTitle;
+        phaseTitle = `${blindName} (${score}/${currentBlind.scoreTarget}) - Ante ${ante}`;
+        break;
+      }
+      case 'round_won':
+        phaseTitle = `${t.titleRoundWon} - Ante ${ante}`;
+        break;
+      case 'shop':
+        phaseTitle = `${t.titleShop} - Ante ${ante}`;
+        break;
+      case 'game_over':
+        phaseTitle = t.titleGameOver;
+        break;
+      case 'victory':
+        phaseTitle = t.titleVictory;
+        break;
+    }
+    document.title = `${phaseTitle} | ${t.appTitle}`;
+  }, [phase, ante, currentBlind, score, t, ante]);
+
   // Ascolto evento standard di installazione PWA del browser
   useEffect(() => {
     // Controlla se l'evento è già stato catturato prima del mount
@@ -783,6 +855,11 @@ export const App: React.FC = () => {
 
   return (
     <div className="tavern-app">
+      {/* Skip Link (WCAG 2.4.1 Livello A - Salto dei blocchi al contenuto principale) */}
+      <a href="#main-content" className="skip-link">
+        [ {t.skipToContent} ]
+      </a>
+
       {/* Live Region accessibilità WAI-ARIA */}
       <div className="sr-only" role="status" aria-live="polite">
         {announcement}
@@ -942,7 +1019,7 @@ export const App: React.FC = () => {
 
       {/* FASE 2: TAVOLO DI GIOCO */}
       {phase === 'in_blind' && (
-        <main className="tavern-table pixel-panel pixel-panel-blood" id="main-content">
+        <main className="tavern-table pixel-panel pixel-panel-blood" id="main-content" tabIndex={-1}>
           {currentBlind.type === 'boss' && currentBlind.bossRule && (
             <aside className="boss-warning-panel pixel-panel" aria-label={t.activeBoss}>
               <span className="boss-warning-title">
@@ -1034,7 +1111,13 @@ export const App: React.FC = () => {
 
       {/* FASE 3: VITTORIA DEL ROUND CON RESOCONTO ECONOMICO */}
       {phase === 'round_won' && roundEarnings && (
-        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.roundWonBanner}>
+        <main
+          className="outcome-screen pixel-panel pixel-panel-blood"
+          id="main-content"
+          tabIndex={-1}
+          role="main"
+          aria-label={t.roundWonBanner}
+        >
           <div className="outcome-banner banner-won pixel-panel">
             <h2 className="outcome-title">[ {t.blindConqueredTitle} ]</h2>
             <p className="outcome-desc">
@@ -1078,7 +1161,7 @@ export const App: React.FC = () => {
               {t.goToShopBtn}
             </button>
           </div>
-        </section>
+        </main>
       )}
 
       {/* FASE 4: BOTTEGA DELLA TAVERNA (SHOP) */}
@@ -1098,7 +1181,13 @@ export const App: React.FC = () => {
 
       {/* FASE 5: SCONFITTA (GAME OVER) CON STATISTICHE */}
       {phase === 'game_over' && (
-        <section className="outcome-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.gameOverTitle}>
+        <main
+          className="outcome-screen pixel-panel pixel-panel-blood"
+          id="main-content"
+          tabIndex={-1}
+          role="main"
+          aria-label={t.gameOverTitle}
+        >
           <div className="outcome-banner banner-lost pixel-panel">
             <h2 className="outcome-title">[ {t.gameOverTitle} ]</h2>
             <p className="outcome-desc">
@@ -1134,7 +1223,7 @@ export const App: React.FC = () => {
               {t.newRunBtn}
             </button>
           </div>
-        </section>
+        </main>
       )}
 
       {/* FASE 6: TRIONFO SUPREMO (ANTE 8 COMPLETATA) */}
@@ -1156,7 +1245,12 @@ export const App: React.FC = () => {
       </footer>
 
       {/* Dialog Modale */}
-      <HelpDialog isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <HelpDialog
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        isReducedMotion={isReducedMotion}
+        onToggleReducedMotion={toggleReducedMotion}
+      />
     </div>
   );
 };

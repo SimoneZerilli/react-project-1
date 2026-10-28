@@ -31,7 +31,13 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const canEquipMoreJokers = equippedJokersCount < maxJokerSlots;
 
   return (
-    <section className="shop-screen pixel-panel pixel-panel-blood" role="region" aria-label={t.shopTitle}>
+    <main
+      className="shop-screen pixel-panel pixel-panel-blood"
+      id="main-content"
+      tabIndex={-1}
+      role="main"
+      aria-label={t.shopTitle}
+    >
       <div className="shop-header">
         <div className="shop-title-group">
           <span className="shop-crest">{t.shopMerchantTitle}</span>
@@ -142,6 +148,6 @@ export const ShopView: React.FC<ShopViewProps> = ({
           {t.leaveShopBtn}
         </button>
       </div>
-    </section>
+    </main>
   );
 };
