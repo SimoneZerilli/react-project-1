@@ -7,7 +7,7 @@ interface HomeScreenProps {
   hasSavedRun: boolean;
   savedAnte?: number;
   stats: RunStatistics;
-  installPrompt: BeforeInstallPromptEvent | null;
+  installPrompt?: BeforeInstallPromptEvent | null;
   onStartNewRun: () => void;
   onContinueRun: () => void;
   onOpenHelp: () => void;
@@ -45,7 +45,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     <main className="home-screen pixel-panel pixel-panel-blood blood-drip-edge" role="main" aria-label="Home Screen Balcard">
       <div className="home-hero">
         <span className="home-crest">[ {t.appSubtitle} ]</span>
-        <h1 className="home-title">Balcard</h1>
+        <h1 className="home-title">Balcard</h1>        
         <p className="home-lore">{t.homeTavernLore}</p>
         <p className="home-brief">{t.homeRulesBrief}</p>
       </div>
@@ -82,16 +82,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {t.homeHowToPlay}
         </button>
 
-        {installPrompt && (
-          <button
-            type="button"
-            className="pixel-btn btn-home-action btn-install"
-            onClick={onInstallApp}
-            aria-label={t.homeInstallApp}
-          >
-            {t.homeInstallApp}
-          </button>
-        )}
+        <button
+          type="button"
+          className="pixel-btn btn-home-action btn-install"
+          onClick={onInstallApp}
+          aria-label={t.homeInstallApp}
+          title={installPrompt ? 'Installa applicazione' : 'Istruzioni installazione PWA'}
+        >
+          {t.homeInstallApp}
+        </button>
 
         <button
           type="button"

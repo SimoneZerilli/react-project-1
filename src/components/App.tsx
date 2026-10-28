@@ -106,9 +106,17 @@ export const App: React.FC = () => {
 
   // Ascolto evento standard di installazione PWA del browser
   useEffect(() => {
+    // Controlla se l'evento è già stato catturato prima del mount
+    const earlyPrompt = (window as unknown as { deferredInstallPrompt?: BeforeInstallPromptEvent }).deferredInstallPrompt;
+    if (earlyPrompt) {
+      setInstallPrompt(earlyPrompt);
+    }
+
     const handleBeforePrompt = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
+      const p = e as BeforeInstallPromptEvent;
+      (window as unknown as { deferredInstallPrompt?: BeforeInstallPromptEvent }).deferredInstallPrompt = p;
+      setInstallPrompt(p);
     };
     window.addEventListener('beforeinstallprompt', handleBeforePrompt);
     return () => {
@@ -652,19 +660,58 @@ export const App: React.FC = () => {
     }
   }, [language]);
 
-  // Prompt installazione PWA
+  // Prompt installazione PWA (sempre funzionante con feedback e fallback cross-browser)
   const handleInstallApp = useCallback(async () => {
-    if (!installPrompt) return;
-    try {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setInstallPrompt(null);
+    // 1. Se è disponibile il prompt nativo del browser
+    if (installPrompt) {
+      try {
+        await installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          setInstallPrompt(null);
+          setAnnouncement(
+            language === 'en'
+              ? 'Balcard installed successfully! You can launch it from your home screen or apps.'
+              : 'Balcard installato con successo! Puoi avviarlo dalla schermata home o dalle applicazioni.'
+          );
+        }
+        return;
+      } catch (err) {
+        console.warn('Install prompt error:', err);
       }
-    } catch (err) {
-      console.warn('Install prompt error:', err);
     }
-  }, [installPrompt]);
+
+    // 2. Se l'applicazione è già installata o aperta in modalità standalone PWA
+    const isStandalone =
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true);
+
+    if (isStandalone) {
+      alert(
+        language === 'en'
+          ? 'Balcard is already installed and running as a standalone app!'
+          : 'Balcard è già installato e in esecuzione come app autonoma!'
+      );
+      return;
+    }
+
+    // 3. Fallback guidato per browser/dispositivi senza prompt automatico
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      alert(
+        language === 'en'
+          ? 'To install Balcard on iOS:\n1. Tap the Share button in Safari [↑]\n2. Scroll down and select "Add to Home Screen"'
+          : 'Per installare Balcard su iOS:\n1. Tocca il pulsante Condividi in Safari [↑]\n2. Scorri e seleziona "Aggiungi a schermata Home"'
+      );
+    } else {
+      alert(
+        language === 'en'
+          ? 'To install Balcard as an App:\n• Click the Install icon [⊕] in your browser address bar (top right)\n• Or open the browser menu (⋮) and select "Install Balcard" or "Add to Home Screen".'
+          : 'Per installare Balcard come App:\n• Clicca sull\'icona Installa [⊕] nella barra degli indirizzi del browser in alto a destra\n• Oppure apri il menu del browser (⋮) e seleziona "Installa Balcard" o "Aggiungi a schermata Home".'
+      );
+    }
+  }, [installPrompt, language]);
 
   // Scorciatoie globali
   useEffect(() => {
@@ -745,8 +792,18 @@ export const App: React.FC = () => {
       {phase !== 'home' && (
         <header className="tavern-header pixel-panel pixel-panel-blood blood-drip-edge" role="banner">
           <div className="tavern-title-group">
-            <div className="tavern-crest">[ {t.appSubtitle} ]</div>
-            <h1 className="tavern-title">{t.appTitle}</h1>
+            <img
+              src="/icon-192.png"
+              alt=""
+              aria-hidden="true"
+              className="tavern-header-icon"
+              width={36}
+              height={36}
+            />
+            <div className="tavern-title-text">
+              <div className="tavern-crest">[ {t.appSubtitle} ]</div>
+              <h1 className="tavern-title">{t.appTitle}</h1>
+            </div>
           </div>
 
           <nav className="header-controls-group" aria-label="Controls">

@@ -73,7 +73,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
       >
         <div className="help-dialog-header">
           <h2 id="help-title" className="help-title">
-            {language === 'en' ? '[ COMMAND ARCHIVE ]' : '[ ARCHIVIO DEI COMANDI ]'}
+            {language === 'en' ? '[ Command Archive ]' : '[ Archivio dei Comandi ]'}
           </h2>
           <button
             ref={closeButtonRef}

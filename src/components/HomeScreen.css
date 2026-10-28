@@ -17,6 +17,20 @@
   gap: 8px;
 }
 
+.home-emblem-img {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 14px rgba(184, 13, 13, 0.7)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+  margin-bottom: 4px;
+  transition: transform 0.2s ease;
+}
+
+.home-emblem-img:hover {
+  transform: scale(1.05) rotate(-2deg);
+}
+
 .home-crest {
   font-family: var(--font-small);
   font-size: 0.95rem;

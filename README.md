@@ -149,6 +149,11 @@ Durante l'iterativo processo di sviluppo assistito dall'intelligenza artificiale
 - **Come ce ne siamo accorti**: L'utente ha segnalato: *"è poco leggibile, quindi puoi usare per i testi grandi quello MA usa solo la prima lettera della parola o frase maiuscola e le altre minuscole sennò non si riesce a leggere, e invece per le scritte piu piccole usa Castlefavor"*.
 - **Come è stato risolto**: È stato rimosso `text-transform: uppercase` convertendo testi e pulsanti al formato Title/Sentence Case (prima lettera maiuscola, restanti minuscole). Sono stati inoltre integrati i font **Alagard** e **Alkhemikal** (Hewett Tsoi / Pix3M) specificamente per tutti i testi piccoli (badge carte, descrizioni, bottega, regole e status bar), garantendo massima leggibilità ed eleganza retro pixel art, riservando la **Jacquard Font Family** ai titoli e alle grandi intestazioni.
 
+### Errore 9: Scomparsa del pulsante di installazione PWA nella schermata Home
+- **Dove ha sbagliato**: Il pulsante `[ Installa app ]` era vincolato alla condizione `{installPrompt && ...}`. Poiché l'evento del browser `beforeinstallprompt` può scattare prima dell'idratazione dei componenti React, o non scattare affatto su browser come Safari/iOS o desktop con criteri euristici differenti, il pulsante risultava del tutto invisibile.
+- **Come ce ne siamo accorti**: L'utente ha segnalato: *"Inoltre mi controlli che funziona ancora l'installazione come app (che non vedo più il pulsante sulla home)"*.
+- **Come è stato risolto**: Il pulsante è stato reso permanentemente visibile nella schermata Home. In `main.tsx` l'evento viene catturato anticipatamente a livello di `window.deferredInstallPrompt`. Nel click handler è stato implementato un sistema a tre livelli: invocazione del prompt nativo se disponibile, notifica se l'app è già in standalone, e istruzioni guidate passo-passo per iOS (Safari "Aggiungi a schermata Home") e desktop.
+
 ---
 
 ## 5. PROGRESSIVE WEB APP (PWA) E SUPPORTO OFFLINE

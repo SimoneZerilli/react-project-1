@@ -1,7 +1,7 @@
 // Service Worker per Balcard PWA
 // Strategia di caching offline e gestione aggiornamenti post-deploy
 
-const CACHE_VERSION = 'balcard-v1';
+const CACHE_VERSION = 'balcard-v2';
 const CACHE_NAME = `balcard-cache-${CACHE_VERSION}`;
 
 // Risorse statiche core da pre-memorizzare nella cache
@@ -30,8 +30,11 @@ const PRECACHE_RESOURCES = [
   '/index.html',
   '/manifest.webmanifest',
   '/favicon.svg',
+  '/favicon.png',
   '/icon-192.png',
   '/icon-512.png',
+  '/app-icon.png',
+  '/icon.png',
   '/fonts/Alagard.ttf',
   '/fonts/Alkhemikal.ttf',
   '/fonts/Castlefavor.ttf',
