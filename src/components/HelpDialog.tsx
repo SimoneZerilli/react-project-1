@@ -130,6 +130,20 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
               </td>
             </tr>
             <tr>
+              <td><kbd className="pixel-key">R</kbd></td>
+              <td>
+                <strong>{language === 'en' ? 'Sort by Rank' : 'Ordina per Valore'}</strong>:{' '}
+                {language === 'en' ? 'Sort hand by rank descending' : 'Ordina la mano per valore decrescente'}
+              </td>
+            </tr>
+            <tr>
+              <td><kbd className="pixel-key">S</kbd></td>
+              <td>
+                <strong>{language === 'en' ? 'Sort by Suit' : 'Ordina per Seme'}</strong>:{' '}
+                {language === 'en' ? 'Sort hand by suit' : 'Ordina la mano per seme'}
+              </td>
+            </tr>
+            <tr>
               <td><kbd className="pixel-key">Tab</kbd> / <kbd className="pixel-key">Shift+Tab</kbd></td>
               <td>
                 {language === 'en'

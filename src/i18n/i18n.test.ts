@@ -70,4 +70,13 @@ describe('i18n Localization Engine', () => {
       expect(translations.it.bossRules[id]).toBeDefined();
     }
   });
+
+  it('dovrebbe contenere etichette e annunci per l\'ordinamento della mano', () => {
+    expect(translations.en.sortRankBtn.toLowerCase()).toContain('rank');
+    expect(translations.it.sortRankBtn.toLowerCase()).toContain('valore');
+    expect(translations.en.sortSuitBtn.toLowerCase()).toContain('suit');
+    expect(translations.it.sortSuitBtn.toLowerCase()).toContain('seme');
+    expect(translations.en.sortedByRankAnnounce).toBeDefined();
+    expect(translations.it.sortedByRankAnnounce).toBeDefined();
+  });
 });

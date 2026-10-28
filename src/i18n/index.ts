@@ -19,6 +19,14 @@ export interface Translations {
   commands: string;
   roundWonBanner: string;
   roundLostBanner: string;
+
+  // Home Screen
+  homeStartRun: string;
+  homeContinueRun: string;
+  homeHowToPlay: string;
+  homeRulesBrief: string;
+  homeTavernLore: string;
+  homeInstallApp: string;
   
   // Blind Selection
   blindSelectTitle: string;
@@ -47,6 +55,10 @@ export interface Translations {
   cardChips: string;
   cardScoring: string;
   handType: string;
+  sortRankBtn: string;
+  sortSuitBtn: string;
+  sortedByRankAnnounce: string;
+  sortedBySuitAnnounce: string;
 
   // Poker Hands
   pokerHands: Record<string, string>;
@@ -121,49 +133,60 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   en: {
-    appTitle: 'BALCARD',
-    appSubtitle: 'DARK MEDIEVAL ROGUELIKE POKER',
-    ante: 'ANTE',
-    gold: 'GOLD',
-    hands: 'HANDS',
-    discards: 'DISCARDS',
-    score: 'SCORE',
-    target: 'TARGET',
-    reward: 'REWARD',
-    help: 'HELP [?]',
-    close: 'CLOSE [ESC]',
-    restart: 'RESTART',
+    appTitle: 'Balcard',
+    appSubtitle: 'Dark Medieval Roguelike Poker',
+    ante: 'Ante',
+    gold: 'Gold',
+    hands: 'Hands',
+    discards: 'Discards',
+    score: 'Score',
+    target: 'Target',
+    reward: 'Reward',
+    help: 'Guida [?]',
+    close: 'Close [Esc]',
+    restart: 'Restart',
     restartConfirm: 'Are you sure you want to abandon the current run and start a new one?',
-    langSwitch: 'LANG: EN',
-    commands: 'COMMANDS',
-    roundWonBanner: 'BLIND CONQUERED!',
-    roundLostBanner: 'DEFEAT!',
+    langSwitch: 'Lang: En',
+    commands: 'Commands',
+    roundWonBanner: 'Blind conquered!',
+    roundLostBanner: 'Defeat!',
 
-    blindSelectTitle: 'CHOOSE NEXT BLIND',
+    homeStartRun: '[ New run ]',
+    homeContinueRun: '[ Continue run ]',
+    homeHowToPlay: '[ How to play (Help) ]',
+    homeRulesBrief: 'Manipulate poker hands, conquer 8 tavern Antes and equip bloody Jokers to overthrow the Blind bosses.',
+    homeTavernLore: 'The tavern doors creak in the fog. Enter at your own risk.',
+    homeInstallApp: '[ Install app ]',
+
+    blindSelectTitle: 'Choose next Blind',
     blindSelectSubtitle: 'Defeat the Blinds to gather gold and advance through all 8 tavern Antes.',
-    smallBlindTitle: 'SMALL BLIND',
-    bigBlindTitle: 'BIG BLIND',
-    bossBlindTitle: 'BOSS BLIND',
-    selectBlindBtn: '[ SELECT BLIND ]',
-    skipBlindBtn: '[ SKIP BLIND ]',
-    upcomingBoss: 'UPCOMING BOSS',
-    activeBoss: 'ACTIVE BOSS',
-    tagReward: 'TAG REWARD',
-    anteProgress: 'ANTE PROGRESSION',
+    smallBlindTitle: 'Small Blind',
+    bigBlindTitle: 'Big Blind',
+    bossBlindTitle: 'Boss Blind',
+    selectBlindBtn: '[ Select Blind ]',
+    skipBlindBtn: '[ Skip Blind ]',
+    upcomingBoss: 'Upcoming Boss',
+    activeBoss: 'Active Boss',
+    tagReward: 'Tag reward',
+    anteProgress: 'Ante progression',
 
-    playHandBtn: '[ PLAY HAND (ENTER) ]',
-    discardBtn: '[ DISCARD (X) ]',
-    roundScoreLabel: 'ROUND SCORE',
-    targetLabel: 'TARGET SCORE',
-    handsRemainingLabel: 'HANDS LEFT',
-    discardsRemainingLabel: 'DISCARDS LEFT',
-    selectedCardsCount: 'SELECTED',
-    debuffedCardNotice: '[!] DEBUFFED BY BOSS',
+    playHandBtn: '[ Play hand (Enter) ]',
+    discardBtn: '[ Discard (X) ]',
+    roundScoreLabel: 'Round score',
+    targetLabel: 'Target score',
+    handsRemainingLabel: 'Hands left',
+    discardsRemainingLabel: 'Discards left',
+    selectedCardsCount: 'Selected',
+    debuffedCardNotice: '[!] Debuffed by Boss',
     noDiscardsRemaining: 'No discards remaining',
     noHandsRemaining: 'Last hand!',
-    cardChips: 'CHIPS',
+    cardChips: 'Chips',
     cardScoring: 'Scores chips',
-    handType: 'HAND',
+    handType: 'Hand',
+    sortRankBtn: '[ Sort: Rank (R) ]',
+    sortSuitBtn: '[ Sort: Suit (S) ]',
+    sortedByRankAnnounce: 'Hand sorted by rank.',
+    sortedBySuitAnnounce: 'Hand sorted by suit.',
 
     pokerHands: {
       high_card: 'High Card',
@@ -179,10 +202,10 @@ export const translations: Record<Language, Translations> = {
     pokerHandLevel: 'Level',
 
     suits: {
-      hearts: 'HEARTS',
-      diamonds: 'DIAMONDS',
-      clubs: 'CLUBS',
-      spades: 'SPADES',
+      hearts: 'Hearts',
+      diamonds: 'Diamonds',
+      clubs: 'Clubs',
+      spades: 'Spades',
     },
 
     jokerChestTitle: '[ JOKER CHEST ]',
@@ -313,49 +336,60 @@ export const translations: Record<Language, Translations> = {
   },
 
   it: {
-    appTitle: 'BALCARD',
-    appSubtitle: 'POKER ROGUELIKE MEDIEVALE DARK',
-    ante: 'ANTE',
-    gold: 'ORO',
-    hands: 'MANI',
-    discards: 'SCARTI',
-    score: 'PUNTEGGIO',
-    target: 'OBIETTIVO',
-    reward: 'RICOMPENSA',
-    help: 'GUIDA [?]',
-    close: 'CHIUDI [ESC]',
-    restart: 'RICOMINCIA',
+    appTitle: 'Balcard',
+    appSubtitle: 'Poker Roguelike Medievale',
+    ante: 'Ante',
+    gold: 'Oro',
+    hands: 'Mani',
+    discards: 'Scarti',
+    score: 'Punteggio',
+    target: 'Obiettivo',
+    reward: 'Ricompensa',
+    help: 'Guida [?]',
+    close: 'Chiudi [Esc]',
+    restart: 'Ricomincia',
     restartConfirm: 'Sei sicuro di voler abbandonare la run corrente per iniziarne una nuova?',
-    langSwitch: 'LINGUA: IT',
-    commands: 'COMANDI',
-    roundWonBanner: 'BLIND CONQUISTATO!',
-    roundLostBanner: 'SCONFITTA!',
+    langSwitch: 'Lingua: It',
+    commands: 'Comandi',
+    roundWonBanner: 'Blind conquistato!',
+    roundLostBanner: 'Sconfitta!',
 
-    blindSelectTitle: 'SCEGLI IL PROSSIMO BLIND',
+    homeStartRun: '[ Nuova partita ]',
+    homeContinueRun: '[ Continua partita ]',
+    homeHowToPlay: '[ Guida e comandi ]',
+    homeRulesBrief: 'Manipola le mani di poker, sconfiggi gli 8 Ante della taverna ed equipaggia Jolly insanguinati per dominare i Boss.',
+    homeTavernLore: 'Le porte della taverna cigolano nella nebbia. Entra a tuo rischio e pericolo.',
+    homeInstallApp: '[ Installa app ]',
+
+    blindSelectTitle: 'Scegli il prossimo Blind',
     blindSelectSubtitle: 'Sconfiggi i Blind per accumulare oro e avanzare attraverso tutti gli 8 Ante.',
-    smallBlindTitle: 'PICCOLO BLIND',
-    bigBlindTitle: 'GRANDE BLIND',
-    bossBlindTitle: 'BLIND DEL BOSS',
-    selectBlindBtn: '[ SELEZIONA BLIND ]',
-    skipBlindBtn: '[ SALTA BLIND ]',
-    upcomingBoss: 'BOSS IN ARRIVO',
-    activeBoss: 'BOSS ATTIVO',
-    tagReward: 'RICOMPENSA TAG',
-    anteProgress: 'PROGRESSIONE ANTE',
+    smallBlindTitle: 'Piccolo Blind',
+    bigBlindTitle: 'Grande Blind',
+    bossBlindTitle: 'Blind del Boss',
+    selectBlindBtn: '[ Seleziona Blind ]',
+    skipBlindBtn: '[ Salta Blind ]',
+    upcomingBoss: 'Boss in arrivo',
+    activeBoss: 'Boss attivo',
+    tagReward: 'Ricompensa Tag',
+    anteProgress: 'Progressione Ante',
 
-    playHandBtn: '[ GIOCA MANO (ENTER) ]',
-    discardBtn: '[ SCARTA (X) ]',
-    roundScoreLabel: 'PUNTEGGIO ROUND',
-    targetLabel: 'PUNTEGGIO BERSAGLIO',
-    handsRemainingLabel: 'MANI RIMASTE',
-    discardsRemainingLabel: 'SCARTI RIMASTI',
-    selectedCardsCount: 'SELEZIONATE',
-    debuffedCardNotice: '[!] DEPOTENZIATA DAL BOSS',
+    playHandBtn: '[ Gioca mano (Enter) ]',
+    discardBtn: '[ Scarta (X) ]',
+    roundScoreLabel: 'Punteggio round',
+    targetLabel: 'Punteggio obiettivo',
+    handsRemainingLabel: 'Mani rimaste',
+    discardsRemainingLabel: 'Scarti rimasti',
+    selectedCardsCount: 'Selezionate',
+    debuffedCardNotice: '[!] Depotenziata dal Boss',
     noDiscardsRemaining: 'Scarti esauriti',
     noHandsRemaining: 'Ultima mano!',
-    cardChips: 'CHIPS',
+    cardChips: 'Chips',
     cardScoring: 'Valida per il punteggio',
-    handType: 'MANO',
+    handType: 'Mano',
+    sortRankBtn: '[ Ordina: Valore (R) ]',
+    sortSuitBtn: '[ Ordina: Seme (S) ]',
+    sortedByRankAnnounce: 'Mano ordinata per valore.',
+    sortedBySuitAnnounce: 'Mano ordinata per seme.',
 
     pokerHands: {
       high_card: 'Carta Alta',
@@ -371,10 +405,10 @@ export const translations: Record<Language, Translations> = {
     pokerHandLevel: 'Livello',
 
     suits: {
-      hearts: 'CUORI',
-      diamonds: 'QUADRI',
-      clubs: 'FIORI',
-      spades: 'PICCHE',
+      hearts: 'Cuori',
+      diamonds: 'Quadri',
+      clubs: 'Fiori',
+      spades: 'Picche',
     },
 
     jokerChestTitle: '[ FORZIERE DEI JOLLY ]',

@@ -23,6 +23,24 @@ export function formatRank(rank: Rank): string {
 }
 
 /**
+ * Restituisce il nome per esteso del rango per lo screen reader (es. 12 -> 'Regina'/'Queen').
+ */
+export function getRankFullName(rank: Rank, lang: 'en' | 'it' = 'en'): string {
+  switch (rank) {
+    case 14:
+      return lang === 'it' ? 'Asso' : 'Ace';
+    case 13:
+      return lang === 'it' ? 'Re' : 'King';
+    case 12:
+      return lang === 'it' ? 'Regina' : 'Queen';
+    case 11:
+      return lang === 'it' ? 'Fante' : 'Jack';
+    default:
+      return String(rank);
+  }
+}
+
+/**
  * Converte il nome del seme in una sigla testuale pulita (senza emoji).
  */
 export function getSuitLabel(suit: Suit): string {
@@ -71,6 +89,34 @@ export function getCardBaseChips(rank: Rank): number {
   if (rank === 14) return 11;
   if (rank >= 10) return 10;
   return rank;
+}
+
+/**
+ * Ordina una mano di carte per valore (rango), dal più alto al più basso.
+ * A parità di rango, ordina per seme (Picche, Cuori, Fiori, Quadri).
+ */
+export function sortCardsByRank(cards: readonly PlayingCard[], descending: boolean = true): PlayingCard[] {
+  const suitOrder: Record<Suit, number> = { spades: 4, hearts: 3, clubs: 2, diamonds: 1 };
+  return [...cards].sort((a, b) => {
+    if (a.rank !== b.rank) {
+      return descending ? b.rank - a.rank : a.rank - b.rank;
+    }
+    return suitOrder[b.suit] - suitOrder[a.suit];
+  });
+}
+
+/**
+ * Ordina una mano di carte per seme (Picche, Cuori, Fiori, Quadri).
+ * A parità di seme, ordina per rango decrescente.
+ */
+export function sortCardsBySuit(cards: readonly PlayingCard[]): PlayingCard[] {
+  const suitOrder: Record<Suit, number> = { spades: 1, hearts: 2, clubs: 3, diamonds: 4 };
+  return [...cards].sort((a, b) => {
+    if (a.suit !== b.suit) {
+      return suitOrder[a.suit] - suitOrder[b.suit];
+    }
+    return b.rank - a.rank;
+  });
 }
 
 /**

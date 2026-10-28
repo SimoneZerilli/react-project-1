@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { type Language, type Translations, translations } from './index';
 
 interface LanguageContextType {
@@ -19,6 +19,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return 'en';
     }
   });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);

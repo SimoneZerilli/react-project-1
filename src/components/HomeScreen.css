@@ -1,0 +1,155 @@
+.home-screen {
+  max-width: 680px;
+  width: 100%;
+  margin: 30px auto;
+  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+}
+
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-crest {
+  font-family: var(--font-small);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--color-blood-bright);
+  font-weight: bold;
+  text-transform: none;
+}
+
+.home-title {
+  font-family: var(--font-title);
+  color: var(--text-primary);
+  font-size: 4rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  text-shadow: 
+    3px 3px 0 var(--color-blood-dark),
+    -1px -1px 0 #000;
+  margin: 4px 0 8px 0;
+}
+
+.home-lore {
+  font-family: var(--font-small);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-style: italic;
+  max-width: 520px;
+  line-height: 1.4;
+  text-transform: none;
+}
+
+.home-brief {
+  font-family: var(--font-small);
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  max-width: 560px;
+  line-height: 1.5;
+  margin-top: 6px;
+  text-transform: none;
+}
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 380px;
+  gap: 12px;
+}
+
+.btn-home-action {
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 14px 20px;
+  min-height: 48px;
+  letter-spacing: 0.1em;
+}
+
+.btn-continue {
+  font-size: 1.1rem;
+  border-color: var(--color-gold);
+}
+
+.btn-install {
+  background-color: var(--color-gold-shadow);
+  color: var(--color-gold-bright);
+  border: 1px solid var(--color-gold);
+}
+
+.btn-install:hover {
+  background-color: var(--color-blood-dark);
+  color: #fff;
+}
+
+.btn-home-lang {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  min-height: 44px;
+}
+
+.home-stats-preview {
+  width: 100%;
+  background-color: var(--bg-surface-elevated);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--color-iron);
+}
+
+.stats-box-tag {
+  font-size: 0.72rem;
+  color: var(--color-gold-bright);
+  letter-spacing: 0.1em;
+  font-weight: bold;
+}
+
+.home-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  text-align: left;
+}
+
+.home-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.home-stat-val {
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  .home-screen {
+    padding: 20px 12px;
+    margin: 10px auto;
+    gap: 20px;
+  }
+
+  .home-title {
+    font-size: 2.2rem;
+  }
+
+  .home-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+

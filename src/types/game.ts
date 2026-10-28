@@ -132,6 +132,7 @@ export interface ShopState {
 
 // --- FASI DI GIOCO ---
 export type GamePhase =
+  | 'home'
   | 'select_blind'
   | 'in_blind'
   | 'scoring_animation'

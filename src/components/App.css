@@ -1,11 +1,74 @@
 .tavern-app {
   max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   min-height: 100vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (max-width: 600px) {
+  .tavern-app {
+    padding: 12px 8px;
+    gap: 12px;
+  }
+
+  .tavern-title {
+    font-size: 1.6rem;
+  }
+
+  .header-controls-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-lang-switch,
+  .btn-abandon-run,
+  .pixel-btn {
+    min-height: 44px;
+  }
+
+  .tavern-status-bar {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 6px;
+    padding: 8px 4px;
+  }
+
+  .tavern-table {
+    padding: 12px 6px;
+    gap: 14px;
+  }
+
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .hand-sort-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-sort {
+    flex: 1;
+    min-height: 44px;
+    text-align: center;
+  }
+
+  .hand-container {
+    gap: 6px;
+    padding: 10px 2px;
+  }
+
+  .pixel-card {
+    width: 72px;
+    height: 112px;
+  }
 }
 
 .tavern-header {
@@ -92,14 +155,16 @@
 }
 
 .status-label {
-  font-size: 0.65rem;
+  font-family: var(--font-small);
+  font-size: 0.8rem;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: 0.05em;
 }
 
 .status-value {
-  font-size: 1.05rem;
+  font-family: var(--font-small);
+  font-size: 1.15rem;
   font-weight: bold;
   letter-spacing: 0.05em;
 }

@@ -31,16 +31,19 @@
 }
 
 .preview-label {
-  font-size: 0.7rem;
+  font-family: var(--font-small);
+  font-size: 0.85rem;
   color: var(--text-muted);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-transform: none;
 }
 
 .preview-hand-name {
+  font-family: var(--font-title);
   color: var(--color-blood-bright);
-  font-size: 1.4rem;
-  letter-spacing: 0.1em;
+  font-size: 1.6rem;
+  letter-spacing: 0.05em;
+  text-transform: none;
   margin-top: 4px;
   text-shadow: 2px 2px 0 #000;
 }

@@ -72,3 +72,21 @@
   font-size: 0.62rem;
   color: var(--color-iron-light);
 }
+
+@media (max-width: 480px) {
+  .joker-slots-panel {
+    padding: 10px 8px;
+    gap: 10px;
+  }
+
+  .slots-row {
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .empty-joker-slot {
+    width: calc(50% - 6px);
+    min-width: 130px;
+    min-height: 180px;
+  }
+}

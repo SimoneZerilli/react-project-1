@@ -21,13 +21,16 @@
 }
 
 .last-hand-tag {
+  font-family: var(--font-small);
   color: var(--text-muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  text-transform: none;
 }
 
 .last-hand-details {
+  font-family: var(--font-small);
   color: var(--text-primary);
+  font-size: 0.95rem;
 }
 
 .action-buttons-group {
@@ -41,12 +44,28 @@
 .play-btn {
   font-size: 1.05rem;
   padding: 12px 24px;
+  min-height: 48px;
 }
 
 .discard-btn {
   font-size: 1.05rem;
   padding: 12px 24px;
+  min-height: 48px;
   background-color: var(--bg-surface-elevated);
+}
+
+@media (max-width: 480px) {
+  .action-buttons-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .play-btn,
+  .discard-btn {
+    width: 100%;
+    min-height: 48px;
+  }
 }
 
 .pixel-btn:disabled {

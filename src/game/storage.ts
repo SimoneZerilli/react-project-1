@@ -1,5 +1,6 @@
 import type {
   Blind,
+  GamePhase,
   HandLevelInfo,
   HandType,
   PlayingCard,
@@ -12,7 +13,7 @@ export const STORAGE_KEY = 'balcard_active_run_v2';
 export interface SavedRunState {
   version: number;
   ante: number;
-  phase: 'select_blind' | 'in_blind' | 'round_won' | 'shop' | 'game_over' | 'victory';
+  phase: GamePhase;
   activeBlindType: 'small' | 'big' | 'boss';
   money: number;
   handLevels: Record<HandType, HandLevelInfo>;

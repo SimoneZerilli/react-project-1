@@ -17,15 +17,15 @@
   --color-gold: #c99e32;
   --color-gold-bright: #f0cb67;
   --color-gold-shadow: #5c4309;
-  --color-iron: #3d3530;
-  --color-iron-light: #5e5248;
+  --color-iron: #453c37;
+  --color-iron-light: #7a6e64;
   --color-iron-dark: #15110e;
 
-  /* Tipografia */
-  --text-primary: #f2e6dc;
-  --text-muted: #9c8b7c;
-  --text-blood: #ff4747;
-  --text-gold: #f0cb67;
+  /* Tipografia con Contrasto WCAG AA / AAA certificato (> 4.5:1 e > 7:1) */
+  --text-primary: #f5ebe1;
+  --text-muted: #baa898;
+  --text-blood: #ff5555;
+  --text-gold: #f5cf6d;
 
   /* Semi Carte */
   --suit-hearts: #cc1111;
@@ -62,5 +62,77 @@
     0 0 0 2px #000,
     0 0 8px rgba(201, 158, 50, 0.3);
 
-  --font-pixel: 'Courier New', 'Lucida Console', Monaco, monospace;
+  /* Tipografia: Jacquard per testi grandi (prima lettera maiuscola), Alagard / Alkhemikal per scritte più piccole */
+  --font-title: 'Jacquard 12', 'Jacquard 24', 'Jacquarda Bastarda 9', serif;
+  --font-small: 'Alagard', 'Alkhemikal', 'Castlefavor', serif;
+  --font-pixel: 'Alagard', 'Alkhemikal', 'Jacquard 12', monospace;
+}
+
+/* Alagard per testi piccoli, carte, descrizioni e bottoni (leggibilità pixel art ottimale) */
+@font-face {
+  font-family: 'Alagard';
+  src: url('/fonts/Alagard.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Alkhemikal fallback pixel fantasy */
+@font-face {
+  font-family: 'Alkhemikal';
+  src: url('/fonts/Alkhemikal.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Castlefavor per supporto storico */
+@font-face {
+  font-family: 'Castlefavor';
+  src: url('/fonts/Castlefavor.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Jacquard Font Family (Jacquard 12, Jacquard 24, Jacquarda Bastarda 9) per titoli e testi grandi */
+@font-face {
+  font-family: 'Jacquard 12';
+  src: url('/fonts/Jacquard12-Regular.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jacquarda Bastarda 9';
+  src: url('/fonts/JacquardaBastarda9-Regular.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jacquard 24';
+  src: url('/fonts/Jacquard24-Regular.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback aggiuntivo per font pixel */
+@font-face {
+  font-family: 'Pixelify Sans';
+  src: url('/fonts/PixelifySans-Regular.ttf') format('truetype');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pixelify Sans';
+  src: url('/fonts/PixelifySans-Bold.ttf') format('truetype');
+  font-weight: 600 700 800;
+  font-style: normal;
+  font-display: swap;
 }

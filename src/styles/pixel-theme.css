@@ -13,6 +13,12 @@
   border: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Reset base */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -28,6 +34,8 @@ body {
     linear-gradient(180deg, #100808 0%, var(--bg-tavern) 100%);
   color: var(--text-primary);
   font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  letter-spacing: 0.05em;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -41,14 +49,43 @@ body {
   outline-offset: var(--focus-offset) !important;
 }
 
-/* Pulsanti Pixel Medievali ad Alto Dettaglio */
+/* Tipografia: Titoli grandi in Jacquard con prima lettera maiuscola */
+h1, h2, h3, h4,
+.tavern-title,
+.outcome-title,
+.blind-select-title,
+.shop-title,
+.help-title,
+.receipt-title {
+  font-family: var(--font-title);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+/* Scritte più piccole, corpo e descrizioni in Castlefavor */
+body, p, span, li, label,
+.status-label,
+.boss-warning-text,
+.blind-select-desc,
+.economic-receipt,
+.dialog-body {
+  font-family: var(--font-small);
+  text-transform: none;
+}
+
+/* Pulsanti Pixel Medievali ad Alto Dettaglio con Touch Target >= 44x44px */
 .pixel-btn {
-  font-family: var(--font-pixel);
-  font-size: 0.92rem;
+  font-family: var(--font-small);
+  font-size: 1.18rem;
   font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0.04em;
   padding: 10px 18px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--bg-surface-elevated);
   color: var(--text-primary);
   border: none;
@@ -57,6 +94,7 @@ body {
   transition: transform 0.08s ease, background-color 0.1s ease;
   position: relative;
   user-select: none;
+  touch-action: manipulation;
 }
 
 .pixel-btn:hover {
@@ -78,6 +116,48 @@ body {
 .pixel-btn-blood:hover {
   background-color: var(--color-blood-fresh);
   color: #fff;
+}
+
+/* Controlli Ordinamento Mano */
+.hand-sort-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-sort {
+  font-size: 0.78rem;
+  padding: 8px 12px;
+  min-height: 44px;
+  min-width: 44px;
+  background-color: var(--bg-surface-elevated);
+  color: var(--color-gold-bright);
+  border: 1px solid var(--color-iron-light);
+}
+
+.btn-sort:hover {
+  background-color: var(--color-blood-dark);
+  color: #fff;
+}
+
+/* Animazioni Ridotte per Accessibilità (prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pixel-card:hover,
+  .pixel-card.is-selected,
+  .pixel-btn:hover,
+  .pixel-btn:active {
+    transform: none !important;
+  }
 }
 
 /* Riquadri Taverna */

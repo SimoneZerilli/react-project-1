@@ -7,6 +7,9 @@ import {
   getCardBaseChips,
   getSuitLabel,
   getSuitAbbreviation,
+  getRankFullName,
+  sortCardsByRank,
+  sortCardsBySuit,
 } from './deck';
 
 describe('Deck Logic (src/game/deck.ts)', () => {
@@ -86,6 +89,53 @@ describe('Deck Logic (src/game/deck.ts)', () => {
 
     expect(drawn).toHaveLength(3);
     expect(remaining).toHaveLength(0);
+  });
+
+  it('dovrebbe formattare i nomi dei ranghi per esteso in italiano e inglese', () => {
+    expect(getRankFullName(14, 'it')).toBe('Asso');
+    expect(getRankFullName(13, 'it')).toBe('Re');
+    expect(getRankFullName(12, 'it')).toBe('Regina');
+    expect(getRankFullName(11, 'it')).toBe('Fante');
+    expect(getRankFullName(10, 'it')).toBe('10');
+
+    expect(getRankFullName(14, 'en')).toBe('Ace');
+    expect(getRankFullName(13, 'en')).toBe('King');
+    expect(getRankFullName(12, 'en')).toBe('Queen');
+    expect(getRankFullName(11, 'en')).toBe('Jack');
+  });
+
+  it('dovrebbe ordinare le carte per valore/rango decrescente e seme', () => {
+    const hand = [
+      { id: 'c1', suit: 'hearts' as const, rank: 5 as const },
+      { id: 'c2', suit: 'spades' as const, rank: 14 as const },
+      { id: 'c3', suit: 'clubs' as const, rank: 10 as const },
+      { id: 'c4', suit: 'hearts' as const, rank: 10 as const },
+      { id: 'c5', suit: 'diamonds' as const, rank: 2 as const },
+    ];
+
+    const sorted = sortCardsByRank(hand);
+    expect(sorted.map((c) => c.rank)).toEqual([14, 10, 10, 5, 2]);
+    // Tra i due 10, Cuori viene prima di Fiori
+    expect(sorted[1].suit).toBe('hearts');
+    expect(sorted[2].suit).toBe('clubs');
+  });
+
+  it('dovrebbe ordinare le carte per seme e per rango decrescente', () => {
+    const hand = [
+      { id: 'c1', suit: 'hearts' as const, rank: 5 as const },
+      { id: 'c2', suit: 'spades' as const, rank: 4 as const },
+      { id: 'c3', suit: 'hearts' as const, rank: 14 as const },
+      { id: 'c4', suit: 'clubs' as const, rank: 10 as const },
+      { id: 'c5', suit: 'diamonds' as const, rank: 2 as const },
+      { id: 'c6', suit: 'spades' as const, rank: 12 as const },
+    ];
+
+    const sorted = sortCardsBySuit(hand);
+    expect(sorted.map((c) => c.suit)).toEqual(['spades', 'spades', 'hearts', 'hearts', 'clubs', 'diamonds']);
+    expect(sorted[0].rank).toBe(12); // Spades Q
+    expect(sorted[1].rank).toBe(4);  // Spades 4
+    expect(sorted[2].rank).toBe(14); // Hearts A
+    expect(sorted[3].rank).toBe(5);  // Hearts 5
   });
 });
 

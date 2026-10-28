@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import type { Blind, HandLevelInfo, HandType, Joker, PlayingCard, ShopItem } from '../types/game';
-import { createStandardDeck, shuffleDeck, drawCards, formatRank, getSuitLabel } from '../game/deck';
+import type { Blind, GamePhase, HandLevelInfo, HandType, Joker, PlayingCard, ShopItem } from '../types/game';
+import {
+  createStandardDeck,
+  shuffleDeck,
+  drawCards,
+  formatRank,
+  getSuitLabel,
+  sortCardsByRank,
+  sortCardsBySuit,
+} from '../game/deck';
 import { evaluateHand } from '../game/handEvaluator';
 import { calculateScore, type ScoreBreakdown } from '../game/scoring';
 import { createAnteBlinds } from '../game/blinds';
@@ -30,6 +38,7 @@ import { JokerSlots } from './JokerSlots';
 import { ShopView } from './ShopView';
 import { VictoryScreen } from './VictoryScreen';
 import { HelpDialog } from './HelpDialog';
+import { HomeScreen, type BeforeInstallPromptEvent } from './HomeScreen';
 import { useLanguage } from '../i18n/LanguageContext';
 import '../styles/pixel-theme.css';
 import './App.css';
@@ -52,12 +61,11 @@ export const App: React.FC = () => {
   // Tenta il ripristino sicuro da localStorage all'avvio
   const savedSession = useRef<SavedRunState | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
-  // Progressione Run
+  // Progressione Run: inizia nella schermata Home
   const [ante, setAnte] = useState<number>(1);
-  const [phase, setPhase] = useState<
-    'select_blind' | 'in_blind' | 'round_won' | 'shop' | 'game_over' | 'victory'
-  >('select_blind');
+  const [phase, setPhase] = useState<GamePhase>('home');
   const [activeBlindType, setActiveBlindType] = useState<'small' | 'big' | 'boss'>('small');
   const [money, setMoney] = useState<number>(4);
 
@@ -94,15 +102,26 @@ export const App: React.FC = () => {
   const [deck, setDeck] = useState<PlayingCard[]>([]);
   const [hand, setHand] = useState<PlayingCard[]>([]);
   const [discardPile, setDiscardPile] = useState<PlayingCard[]>([]);
-  const [announcement, setAnnouncement] = useState('Seleziona il prossimo Blind da affrontare.');
+  const [announcement, setAnnouncement] = useState('Benvenuto alla Taverna di Balcard.');
+
+  // Ascolto evento standard di installazione PWA del browser
+  useEffect(() => {
+    const handleBeforePrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforePrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforePrompt);
+    };
+  }, []);
 
   // Caricamento iniziale da localStorage
   useEffect(() => {
     const loaded = loadRunState();
-    if (loaded) {
+    if (loaded && loaded.phase !== 'game_over' && loaded.phase !== 'victory') {
       savedSession.current = loaded;
       setAnte(loaded.ante);
-      setPhase(loaded.phase === 'game_over' || loaded.phase === 'victory' ? 'select_blind' : loaded.phase);
       setActiveBlindType(loaded.activeBlindType);
       setMoney(loaded.money);
       setHandLevels(loaded.handLevels);
@@ -118,17 +137,23 @@ export const App: React.FC = () => {
       setDiscardPile(loaded.discardPile);
       setPendingBonusDiscards(loaded.pendingBonusDiscards);
       setPendingBonusHands(loaded.pendingBonusHands);
-      setAnnouncement('Partita precedente ripristinata dal forziere locale.');
+      setAnnouncement(
+        language === 'en'
+          ? 'Previous saved expedition detected in chest.'
+          : 'Partita precedente ripristinata dal forziere locale.'
+      );
     }
+    setPhase('home');
     setIsInitialized(true);
-  }, []);
+  }, [language]);
 
   // Salvataggio automatico continuo dello stato della run
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || phase === 'home') return;
 
     if (phase === 'game_over' || phase === 'victory') {
       clearRunState();
+      savedSession.current = null;
       return;
     }
 
@@ -420,14 +445,24 @@ export const App: React.FC = () => {
 
       setPhase('round_won');
       setAnnouncement(
-        `VITTORIA! ${breakdown.displayName}: +${breakdown.finalScore} PTS. Guadagnati +$${totalGain} d'oro (incluso +$${interestBonus} di interesse)!`
+        language === 'it'
+          ? `VITTORIA! ${breakdown.displayName}: +${breakdown.finalScore} punti. Punti mancanti all'obiettivo: 0 (Punteggio: ${newScore}/${currentBlind.scoreTarget}). Guadagnati +$${totalGain} d'oro!`
+          : `VICTORY! ${breakdown.displayName}: +${breakdown.finalScore} points. Points missing to target: 0 (Score: ${newScore}/${currentBlind.scoreTarget}). Earned +$${totalGain} gold!`
       );
     } else if (newHands === 0) {
       setPhase('game_over');
-      setAnnouncement(`SCONFITTA! Mani esaurite senza raggiungere ${currentBlind.scoreTarget} punti.`);
-    } else {
+      const missingPts = Math.max(0, currentBlind.scoreTarget - newScore);
       setAnnouncement(
-        `${breakdown.displayName}: +${breakdown.finalScore} PTS. Totale: ${newScore}/${currentBlind.scoreTarget}. Mani rimaste: ${newHands}.`
+        language === 'it'
+          ? `SCONFITTA! ${breakdown.displayName}: +${breakdown.finalScore} punti. Punti mancanti all'obiettivo: ${missingPts} (${newScore}/${currentBlind.scoreTarget}). Mani esaurite.`
+          : `DEFEAT! ${breakdown.displayName}: +${breakdown.finalScore} points. Points missing to target: ${missingPts} (${newScore}/${currentBlind.scoreTarget}). Hands exhausted.`
+      );
+    } else {
+      const missingPts = Math.max(0, currentBlind.scoreTarget - newScore);
+      setAnnouncement(
+        language === 'it'
+          ? `${breakdown.displayName}: +${breakdown.finalScore} punti. Punti mancanti all'obiettivo: ${missingPts} (${newScore}/${currentBlind.scoreTarget}). Mani rimaste: ${newHands}.`
+          : `${breakdown.displayName}: +${breakdown.finalScore} points. Points missing to target: ${missingPts} (${newScore}/${currentBlind.scoreTarget}). Hands remaining: ${newHands}.`
       );
     }
   }, [
@@ -446,7 +481,22 @@ export const App: React.FC = () => {
     discardsRemaining,
     ante,
     setFocusedIndex,
+    language,
   ]);
+
+  // Ordinamento della mano per valore (Rango, decrescente)
+  const handleSortByRank = useCallback(() => {
+    if (hand.length === 0) return;
+    setHand((prev) => sortCardsByRank(prev));
+    setAnnouncement(t.sortedByRankAnnounce);
+  }, [hand.length, t.sortedByRankAnnounce]);
+
+  // Ordinamento della mano per seme
+  const handleSortBySuit = useCallback(() => {
+    if (hand.length === 0) return;
+    setHand((prev) => sortCardsBySuit(prev));
+    setAnnouncement(t.sortedBySuitAnnounce);
+  }, [hand.length, t.sortedBySuitAnnounce]);
 
   // Azione SCARTA (X)
   const handleDiscard = useCallback(() => {
@@ -573,8 +623,48 @@ export const App: React.FC = () => {
     setDeck([]);
     setHand([]);
     setDiscardPile([]);
+    savedSession.current = null;
     setAnnouncement('Nuova partita avviata. Ante 1 - Scegli il Blind.');
   }, []);
+
+  // Avvio nuova run dalla schermata Home
+  const handleStartNewRun = useCallback(() => {
+    handleRestartRun();
+    setPhase('select_blind');
+  }, [handleRestartRun]);
+
+  // Ripresa run salvata
+  const handleContinueRun = useCallback(() => {
+    if (
+      savedSession.current &&
+      savedSession.current.phase !== 'home' &&
+      savedSession.current.phase !== 'game_over' &&
+      savedSession.current.phase !== 'victory'
+    ) {
+      setPhase(savedSession.current.phase);
+      setAnnouncement(
+        language === 'en'
+          ? `Run resumed at Ante ${savedSession.current.ante}.`
+          : `Partita ripresa all'Ante ${savedSession.current.ante}.`
+      );
+    } else {
+      setPhase('select_blind');
+    }
+  }, [language]);
+
+  // Prompt installazione PWA
+  const handleInstallApp = useCallback(async () => {
+    if (!installPrompt) return;
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setInstallPrompt(null);
+      }
+    } catch (err) {
+      console.warn('Install prompt error:', err);
+    }
+  }, [installPrompt]);
 
   // Scorciatoie globali
   useEffect(() => {
@@ -591,7 +681,13 @@ export const App: React.FC = () => {
       if (isHelpOpen) return;
 
       if (phase === 'in_blind') {
-        if (e.key === 'Enter') {
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          handleSortByRank();
+        } else if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          handleSortBySuit();
+        } else if (e.key === 'Enter') {
           if (selectedCardIds.length > 0 && handsRemaining > 0) {
             e.preventDefault();
             handlePlayHand();
@@ -627,6 +723,8 @@ export const App: React.FC = () => {
     discardsRemaining,
     handlePlayHand,
     handleDiscard,
+    handleSortByRank,
+    handleSortBySuit,
     handleGoToShop,
     handleRestartRun,
   ]);
@@ -643,86 +741,120 @@ export const App: React.FC = () => {
         {announcement}
       </div>
 
-      {/* Intestazione */}
-      <header className="tavern-header pixel-panel pixel-panel-blood blood-drip-edge" role="banner">
-        <div className="tavern-title-group">
-          <div className="tavern-crest">[ {t.appSubtitle} ]</div>
-          <h1 className="tavern-title">{t.appTitle}</h1>
-        </div>
+      {/* Intestazione visibile solo durante la partita (rimossa nella schermata Home) */}
+      {phase !== 'home' && (
+        <header className="tavern-header pixel-panel pixel-panel-blood blood-drip-edge" role="banner">
+          <div className="tavern-title-group">
+            <div className="tavern-crest">[ {t.appSubtitle} ]</div>
+            <h1 className="tavern-title">{t.appTitle}</h1>
+          </div>
 
-        <nav className="header-controls-group" aria-label="Controls">
-          <button
-            type="button"
-            className="pixel-btn btn-lang-switch"
-            onClick={toggleLanguage}
-            aria-label={`Current language: ${language.toUpperCase()}. Click to switch language.`}
-          >
-            [ {t.langSwitch} ]
-          </button>
-          <button
-            type="button"
-            className="pixel-btn btn-abandon-run"
-            onClick={handleRestartRun}
-            aria-label={t.restart}
-          >
-            [ {t.restart} ]
-          </button>
-          <button
-            type="button"
-            className="pixel-btn pixel-btn-blood"
-            onClick={() => setIsHelpOpen(true)}
-            aria-label={t.help}
-          >
-            {t.help}
-          </button>
-        </nav>
-      </header>
+          <nav className="header-controls-group" aria-label="Controls">
+            <button
+              type="button"
+              className="pixel-btn btn-home-nav"
+              onClick={() => setPhase('home')}
+              aria-label={language === 'en' ? 'Return to Home screen' : 'Torna alla schermata principale'}
+            >
+              [ Home ]
+            </button>
+            <button
+              type="button"
+              className="pixel-btn btn-lang-switch"
+              onClick={toggleLanguage}
+              aria-label={`Current language: ${language.toUpperCase()}. Click to switch language.`}
+            >
+              [ {t.langSwitch} ]
+            </button>
+            <button
+              type="button"
+              className="pixel-btn btn-abandon-run"
+              onClick={handleRestartRun}
+              aria-label={t.restart}
+            >
+              [ {t.restart} ]
+            </button>
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-blood"
+              onClick={() => setIsHelpOpen(true)}
+              aria-label={t.help}
+            >
+              {t.help}
+            </button>
+          </nav>
+        </header>
+      )}
 
-      {/* Barra Risorse e Stato Globale */}
-      <section className="tavern-status-bar pixel-panel" aria-label="Game Status">
-        <div className="status-item">
-          <span className="status-label">{t.ante}</span>
-          <span className="status-value status-gold">{ante} / 8</span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">BLIND</span>
-          <span className="status-value">
-            {currentBlind.type === 'small'
-              ? t.smallBlindTitle
-              : currentBlind.type === 'big'
-              ? t.bigBlindTitle
-              : t.bossBlindTitle}
-          </span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">{t.score} / {t.target}</span>
-          <span className="status-value status-blood">
-            {score} / {currentBlind.scoreTarget} PTS ({scoreProgressPercent}%)
-          </span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">{t.gold}</span>
-          <span className="status-value status-gold">${money}</span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">{t.hands}</span>
-          <span className={`status-value ${handsRemaining <= 1 ? 'status-blood' : ''}`}>
-            {phase === 'in_blind' ? handsRemaining : 4 + pendingBonusHands}
-          </span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">{t.discards}</span>
-          <span className="status-value">
-            {phase === 'in_blind' ? discardsRemaining : 4 + pendingBonusDiscards}
-          </span>
-        </div>
-      </section>
+      {/* FASE 0: SCHERMATA INIZIALE (HOME) */}
+      {phase === 'home' && (
+        <HomeScreen
+          hasSavedRun={Boolean(
+            savedSession.current &&
+            savedSession.current.phase !== 'home' &&
+            savedSession.current.phase !== 'game_over' &&
+            savedSession.current.phase !== 'victory'
+          )}
+          savedAnte={savedSession.current?.ante ?? ante}
+          stats={runStats}
+          installPrompt={installPrompt}
+          onStartNewRun={handleStartNewRun}
+          onContinueRun={handleContinueRun}
+          onOpenHelp={() => setIsHelpOpen(true)}
+          onInstallApp={handleInstallApp}
+        />
+      )}
 
-      {/* Pannello Jolly Equipaggiati */}
-      <JokerSlots
-        equippedJokers={equippedJokers}
-        onSellJoker={handleSellJoker}
-      />
+      {/* CONTENUTI ATTIVI SOLO DURANTE LA PARTITA */}
+      {phase !== 'home' && (
+        <>
+          {/* Barra Risorse e Stato Globale */}
+          <section className="tavern-status-bar pixel-panel" aria-label="Game Status">
+            <div className="status-item">
+              <span className="status-label">{t.ante}</span>
+              <span className="status-value status-gold">{ante} / 8</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Blind</span>
+              <span className="status-value">
+                {currentBlind.type === 'small'
+                  ? t.smallBlindTitle
+                  : currentBlind.type === 'big'
+                  ? t.bigBlindTitle
+                  : t.bossBlindTitle}
+              </span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{t.score} / {t.target}</span>
+              <span className="status-value status-blood">
+                {score} / {currentBlind.scoreTarget} Pts ({scoreProgressPercent}%)
+              </span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{t.gold}</span>
+              <span className="status-value status-gold">${money}</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{t.hands}</span>
+              <span className={`status-value ${handsRemaining <= 1 ? 'status-blood' : ''}`}>
+                {phase === 'in_blind' ? handsRemaining : 4 + pendingBonusHands}
+              </span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{t.discards}</span>
+              <span className="status-value">
+                {phase === 'in_blind' ? discardsRemaining : 4 + pendingBonusDiscards}
+              </span>
+            </div>
+          </section>
+
+          {/* Pannello Jolly Equipaggiati */}
+          <JokerSlots
+            equippedJokers={equippedJokers}
+            onSellJoker={handleSellJoker}
+          />
+        </>
+      )}
 
       {/* Barra Progresso Punteggio */}
       {phase === 'in_blind' && (
@@ -757,7 +889,7 @@ export const App: React.FC = () => {
           {currentBlind.type === 'boss' && currentBlind.bossRule && (
             <aside className="boss-warning-panel pixel-panel" aria-label={t.activeBoss}>
               <span className="boss-warning-title">
-                [ {t.activeBoss}: {(t.bossRules[currentBlind.bossRule.id]?.name ?? currentBlind.bossRule.name).toUpperCase()} ]
+                [ {t.activeBoss}: {t.bossRules[currentBlind.bossRule.id]?.name ?? currentBlind.bossRule.name} ]
               </span>
               <p className="boss-warning-text">
                 {t.bossRules[currentBlind.bossRule.id]?.description ?? currentBlind.bossRule.description}
@@ -770,8 +902,32 @@ export const App: React.FC = () => {
               <span>{t.selectedCardsCount}: </span>
               <span className="counter-number status-gold">{selectedCardIds.length} / 5</span>
             </div>
+
+            <div
+              className="hand-sort-controls"
+              role="group"
+              aria-label={language === 'it' ? 'Comandi ordinamento della mano' : 'Hand sorting commands'}
+            >
+              <button
+                type="button"
+                className="pixel-btn btn-sort"
+                onClick={handleSortByRank}
+                aria-label={language === 'it' ? 'Ordina carte in mano per valore con tasto R' : 'Sort hand cards by rank with key R'}
+              >
+                {t.sortRankBtn}
+              </button>
+              <button
+                type="button"
+                className="pixel-btn btn-sort"
+                onClick={handleSortBySuit}
+                aria-label={language === 'it' ? 'Ordina carte in mano per seme con tasto S' : 'Sort hand cards by suit with key S'}
+              >
+                {t.sortSuitBtn}
+              </button>
+            </div>
+
             <div className="deck-counter">
-              <span>{language === 'en' ? `DECK: ${deck.length} CARDS` : `MAZZO: ${deck.length} CARTE`}</span>
+              <span>{language === 'en' ? `Deck: ${deck.length} cards` : `Mazzo: ${deck.length} carte`}</span>
             </div>
           </div>
 

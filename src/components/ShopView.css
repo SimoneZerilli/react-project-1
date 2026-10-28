@@ -194,3 +194,30 @@
   padding: 12px 24px;
 }
 
+@media (max-width: 480px) {
+  .shop-screen {
+    padding: 12px 8px;
+  }
+
+  .shop-items-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .btn-buy {
+    min-height: 48px;
+  }
+
+  .shop-footer-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-reroll,
+  .btn-leave-shop {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+

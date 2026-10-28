@@ -1,45 +1,34 @@
 .pixel-card {
   width: 90px;
   height: 138px;
-  background-color: #2b231c;
-  border: 2px solid var(--color-iron-light);
-  box-shadow: 
-    0 -2px 0 0 var(--color-iron-light),
-    0 2px 0 0 var(--color-iron-dark),
-    -2px 0 0 0 var(--color-iron-light),
-    2px 0 0 0 var(--color-iron-dark),
-    0 0 0 2px #000;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  padding: 0;
   cursor: pointer;
   user-select: none;
   position: relative;
-  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.4, 1), box-shadow 0.12s ease;
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.4, 1), filter 0.12s ease;
   font-family: var(--font-pixel);
-  border-radius: 2px;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.7));
 }
 
 .pixel-card:hover {
   transform: translateY(-8px);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.85)) brightness(1.06);
 }
 
 .pixel-card.is-selected {
   transform: translateY(-18px);
-  border-color: var(--color-blood-bright);
-  box-shadow: 
-    0 -3px 0 0 var(--color-blood-bright),
-    0 3px 0 0 var(--color-blood-dark),
-    -3px 0 0 0 var(--color-blood-bright),
-    3px 0 0 0 var(--color-blood-dark),
-    0 0 12px rgba(230, 25, 25, 0.75),
-    0 0 0 2px #000;
+  filter: drop-shadow(0 0 6px var(--color-blood-bright)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.9));
 }
 
 .pixel-card:focus-visible {
   outline: 3px solid var(--focus-ring) !important;
-  outline-offset: 4px !important;
+  outline-offset: 2px !important;
   z-index: 10;
 }
 
@@ -52,6 +41,36 @@
   display: block;
 }
 
+.card-suit-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: rgba(12, 10, 8, 0.92);
+  border: 1px solid var(--color-iron-light);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1.1;
+  pointer-events: none;
+  font-family: var(--font-small);
+  text-transform: none;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.suit-hearts .card-suit-badge,
+.suit-diamonds .card-suit-badge {
+  color: #ff9999;
+  border-color: #aa2222;
+}
+
+.suit-clubs .card-suit-badge,
+.suit-spades .card-suit-badge {
+  color: #f0f0f0;
+  border-color: #666666;
+}
+
 .card-chips-badge {
   position: absolute;
   bottom: 4px;
@@ -59,12 +78,14 @@
   background-color: rgba(12, 10, 8, 0.88);
   border: 1px solid var(--color-gold);
   color: var(--color-gold-bright);
-  font-size: 0.68rem;
+  font-size: 0.95rem;
+  font-family: var(--font-small);
   font-weight: bold;
   padding: 1px 4px;
   border-radius: 2px;
   line-height: 1.1;
   pointer-events: none;
+  text-transform: none;
 }
 
 .scoring-indicator {
@@ -83,5 +104,5 @@
 }
 
 .pixel-card.is-scoring {
-  border-color: var(--color-gold-bright);
+  filter: drop-shadow(0 0 6px var(--color-gold-bright)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.9));
 }
